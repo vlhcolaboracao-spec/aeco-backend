@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema AECO</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- HTMX via CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-gray-900">Sistema AECO</h1>
+                    <span class="ml-3 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        Static Mode
+                    </span>
+                </div>
+                <nav class="flex space-x-4">
+                    <a href="/" class="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium">
+                        Dashboard
+                    </a>
+                    <a href="/projetos" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        Projetos
+                    </a>
+                    <a href="/formulario-terrenos-projetos" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        Terrenos
+                    </a>
+                    <a href="/docs" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        API Docs
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="space-y-6">
+            <!-- Header da Página -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Dashboard AECO</h2>
+                <p class="text-gray-600">Sistema de gerenciamento de projetos e terrenos</p>
+            </div>
+
+            <!-- Cards de Status -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Status do Sistema -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Status do Sistema</h3>
+                    <div id="health-status" class="space-y-2">
+                        <button 
+                            hx-get="/health" 
+                            hx-target="#health-status" 
+                            hx-trigger="click"
+                            class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            Verificar Status
+                        </button>
+                        <div class="text-sm text-gray-500">Clique para verificar conexões</div>
+                    </div>
+                </div>
+
+                <!-- Estatísticas de Projetos -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Projetos</h3>
+                    <div class="space-y-2">
+                        <div class="text-2xl font-bold text-blue-600" id="projetos-count">-</div>
+                        <div class="text-sm text-gray-500">Total de projetos</div>
+                        <button 
+                            hx-get="/projetos" 
+                            hx-target="#projetos-count" 
+                            hx-trigger="click"
+                            class="text-blue-600 hover:text-blue-800 text-sm">
+                            Ver projetos
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Estatísticas de Terrenos -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Terrenos</h3>
+                    <div class="space-y-2">
+                        <div class="text-2xl font-bold text-green-600" id="terrenos-count">-</div>
+                        <div class="text-sm text-gray-500">Total de terrenos</div>
+                        <button 
+                            hx-get="/formulario-terrenos-projetos/stats/summary" 
+                            hx-target="#terrenos-count" 
+                            hx-trigger="click"
+                            class="text-green-600 hover:text-green-800 text-sm">
+                            Ver estatísticas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- API Info -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">API Info</h3>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-600">Base URL:</div>
+                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">http://127.0.0.1:8000</code>
+                        <div class="text-sm text-gray-600 mt-2">Modo:</div>
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            Static
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Ações Rápidas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="/formulario-terrenos-projetos" 
+                       class="bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-center">
+                        <div class="font-medium">Cadastrar Terreno</div>
+                        <div class="text-sm opacity-90">Novo formulário de terreno</div>
+                    </a>
+                    
+                    <a href="/projetos" 
+                       class="bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors text-center">
+                        <div class="font-medium">Gerenciar Projetos</div>
+                        <div class="text-sm opacity-90">CRUD de projetos</div>
+                    </a>
+                    
+                    <a href="/docs" 
+                       class="bg-gray-600 text-white px-4 py-3 rounded-md hover:bg-gray-700 transition-colors text-center">
+                        <div class="font-medium">API Documentation</div>
+                        <div class="text-sm opacity-90">Swagger UI</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Lista Recente de Terrenos -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Terrenos Recentes</h3>
+                    <button 
+                        hx-get="/formulario-terrenos-projetos?limit=5" 
+                        hx-target="#terrenos-recentes" 
+                        hx-trigger="click"
+                        class="text-blue-600 hover:text-blue-800 text-sm">
+                        Atualizar
+                    </button>
+                </div>
+                <div id="terrenos-recentes">
+                    <div class="text-gray-500 text-sm">Clique em "Atualizar" para carregar terrenos</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>Sistema AECO - Backend API com FastAPI e MongoDB</p>
+                <p class="mt-1">API Base URL: <code class="bg-gray-100 px-1 rounded">http://127.0.0.1:8000</code></p>
+                <p class="mt-1">Editar em: <code class="bg-gray-100 px-1 rounded">frontend/public/index.html</code></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    // Auto-refresh das estatísticas a cada 30 segundos
+    setInterval(() => {
+        // Refresh automático do status de saúde
+        htmx.trigger('#health-status button', 'click');
+    }, 30000);
+    </script>
+</body>
+</html>

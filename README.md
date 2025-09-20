@@ -23,14 +23,29 @@ PROJETO_IAP/
 │       │   └── mongo.py            # Conexão e configuração MongoDB
 │       ├── models/
 │       │   ├── comum.py            # Schemas comuns (Response, Health, etc.)
-│       │   └── projeto.py          # Schemas para Projetos
+│       │   ├── projeto.py          # Schemas para Projetos
+│       │   └── formulario_terrenos_projetos.py # Schemas para Terrenos
 │       ├── repositories/
-│       │   └── projetos_repo.py    # CRUD de projetos no MongoDB
+│       │   ├── projetos_repo.py    # CRUD de projetos no MongoDB
+│       │   └── formulario_terrenos_repo.py # CRUD de terrenos
 │       ├── routers/
 │       │   ├── health.py           # Endpoint /health
-│       │   └── projetos.py         # CRUD de projetos
-│       └── services/
-│           └── connections_check.py # Verificação de conexões
+│       │   ├── projetos.py         # CRUD de projetos
+│       │   ├── formulario_terrenos.py # CRUD de terrenos
+│       │   └── web.py              # Rotas do frontend
+│       ├── services/
+│       │   └── connections_check.py # Verificação de conexões
+│       └── web/
+│           ├── templates/          # Templates Jinja2
+│           │   ├── base.html       # Template base
+│           │   ├── dashboard.html  # Dashboard
+│           │   └── formulario_terrenos.html # Formulário de terrenos
+│           └── static/             # Arquivos estáticos
+│               └── favicon.svg     # Ícone do sistema
+├── frontend/
+│   └── public/                     # HTML estático
+│       ├── index.html              # Dashboard estático
+│       └── formulario_terrenos.html # Formulário estático
 ├── tests/
 │   └── test_connections.py         # Script de teste das conexões
 ├── env.example                     # Variáveis de ambiente (template)
@@ -134,9 +149,68 @@ python tests/test_connections.py
 - **PUT** `/projetos/{id}` - Atualizar projeto
 - **DELETE** `/projetos/{id}` - Deletar projeto
 
+### Formulário de Terrenos de Projetos (CRUD)
+- **POST** `/formulario-terrenos-projetos` - Criar novo terreno
+- **GET** `/formulario-terrenos-projetos/{id}` - Buscar terreno por ID
+- **GET** `/formulario-terrenos-projetos` - Listar todos os terrenos (com paginação e busca)
+- **PUT** `/formulario-terrenos-projetos/{id}` - Atualizar terreno
+- **DELETE** `/formulario-terrenos-projetos/{id}` - Deletar terreno
+- **GET** `/formulario-terrenos-projetos/stats/summary` - Estatísticas dos terrenos
+
 ### Informações
 - **GET** `/` - Informações básicas da API
 - **GET** `/info` - Informações detalhadas da aplicação
+
+## 🌐 Frontend (HTML Editável)
+
+O sistema inclui um frontend completo editável com duas opções:
+
+### **Modo Static (Padrão)**
+- Arquivos HTML estáticos em `frontend/public/`
+- Edição direta dos arquivos HTML
+- Sem processamento server-side
+
+### **Modo Jinja2**
+- Templates dinâmicos em `backend/app/web/templates/`
+- Variáveis injetadas do servidor
+- Mais flexível para desenvolvimento
+
+### **Como Escolher o Modo**
+
+No arquivo `.env`:
+```env
+# Modo Static (padrão)
+FRONTEND_MODE=static
+
+# Modo Jinja2
+FRONTEND_MODE=jinja
+```
+
+### **Páginas Disponíveis**
+
+- **Dashboard**: http://127.0.0.1:8000/
+- **Formulário de Terrenos**: http://127.0.0.1:8000/formulario-terrenos-projetos
+- **Dashboard Jinja2**: http://127.0.0.1:8000/dashboard
+
+### **Como Editar**
+
+#### **Modo Static:**
+1. Abra `frontend/public/index.html` ou `frontend/public/formulario_terrenos.html`
+2. Edite diretamente o HTML
+3. Salve e recarregue a página
+
+#### **Modo Jinja2:**
+1. Edite `backend/app/web/templates/dashboard.html` ou `formulario_terrenos.html`
+2. Use `backend/app/web/templates/base.html` como template base
+3. Reinicie o servidor para ver mudanças
+
+### **Tecnologias do Frontend**
+
+- **Tailwind CSS** via CDN (sem build)
+- **HTMX** para interações sem JavaScript complexo
+- **Formulários responsivos** com validação
+- **CRUD completo** via HTMX
+- **Layout adaptativo** para mobile e desktop
 
 ## 📖 Documentação Interativa
 
@@ -277,6 +351,39 @@ curl -X GET "http://127.0.0.1:8000/projetos"
 curl -X GET "http://127.0.0.1:8000/health"
 ```
 
+### Formulário de Terrenos
+```bash
+# Criar um terreno
+curl -X POST "http://127.0.0.1:8000/formulario-terrenos-projetos" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "matricula": "12345-67.89.012-3",
+       "data": "2024-01-15T10:00:00",
+       "municipio": "Sorriso",
+       "estado": "MT",
+       "pais": "BRASIL",
+       "bairro": "Centro",
+       "logradouro": "Av. Porto Alegre",
+       "numero": "2525",
+       "cep": "78890000",
+       "lados_poligono": 4,
+       "tipo_lote": "Esquina",
+       "area": 500.50,
+       "norte_verdadeiro": 0.0,
+       "zona": "Residencial",
+       "observacoes": "Terreno em esquina, boa localização"
+     }'
+
+# Listar terrenos
+curl -X GET "http://127.0.0.1:8000/formulario-terrenos-projetos"
+
+# Buscar terreno por ID
+curl -X GET "http://127.0.0.1:8000/formulario-terrenos-projetos/{id}"
+
+# Estatísticas dos terrenos
+curl -X GET "http://127.0.0.1:8000/formulario-terrenos-projetos/stats/summary"
+```
+
 ## 🐛 Troubleshooting
 
 ### Problemas Comuns
@@ -311,6 +418,10 @@ LOG_LEVEL=DEBUG
 - [ ] ✅ Swagger UI acessível em `/docs`
 - [ ] ✅ MongoDB conecta e responde ao ping
 - [ ] ✅ CRUD de projetos funciona (criar, listar, buscar, atualizar, deletar)
+- [ ] ✅ Dashboard acessível em http://127.0.0.1:8000/
+- [ ] ✅ Formulário de terrenos funciona (criar, listar, buscar)
+- [ ] ✅ Frontend responde com HTMX (sem recarregar página)
+- [ ] ✅ Modo static/jinja configurável via .env
 
 ## 🤝 Contribuição
 

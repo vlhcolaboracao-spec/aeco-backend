@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .db.mongo import connect_to_mongo, close_mongo_connection
-from .routers import health, projetos
+from .routers import health, projetos, formulario_terrenos, web
 
 # Configuração de logging
 logging.basicConfig(
@@ -62,6 +62,8 @@ app.add_middleware(
 # Registro dos routers
 app.include_router(health.router)
 app.include_router(projetos.router)
+app.include_router(formulario_terrenos.router)
+app.include_router(web.router)
 
 
 @app.get("/")

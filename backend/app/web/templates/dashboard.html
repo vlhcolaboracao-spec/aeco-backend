@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema AECO{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header da Página -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">Dashboard AECO</h2>
+        <p class="text-gray-600">Sistema de gerenciamento de projetos e terrenos</p>
+    </div>
+
+    <!-- Cards de Status -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Status do Sistema -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Status do Sistema</h3>
+            <div id="health-status" class="space-y-2">
+                <button 
+                    hx-get="/health" 
+                    hx-target="#health-status" 
+                    hx-trigger="click"
+                    class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                    Verificar Status
+                </button>
+                <div class="text-sm text-gray-500">Clique para verificar conexões</div>
+            </div>
+        </div>
+
+        <!-- Estatísticas de Projetos -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Projetos</h3>
+            <div class="space-y-2">
+                <div class="text-2xl font-bold text-blue-600" id="projetos-count">-</div>
+                <div class="text-sm text-gray-500">Total de projetos</div>
+                <button 
+                    hx-get="/projetos" 
+                    hx-target="#projetos-count" 
+                    hx-trigger="click"
+                    class="text-blue-600 hover:text-blue-800 text-sm">
+                    Ver projetos
+                </button>
+            </div>
+        </div>
+
+        <!-- Estatísticas de Terrenos -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Terrenos</h3>
+            <div class="space-y-2">
+                <div class="text-2xl font-bold text-green-600" id="terrenos-count">-</div>
+                <div class="text-sm text-gray-500">Total de terrenos</div>
+                <button 
+                    hx-get="/formulario-terrenos-projetos/stats/summary" 
+                    hx-target="#terrenos-count" 
+                    hx-trigger="click"
+                    class="text-green-600 hover:text-green-800 text-sm">
+                    Ver estatísticas
+                </button>
+            </div>
+        </div>
+
+        <!-- API Info -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">API Info</h3>
+            <div class="space-y-2">
+                <div class="text-sm text-gray-600">Base URL:</div>
+                <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ api_base_url }}</code>
+                <div class="text-sm text-gray-600 mt-2">Modo:</div>
+                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    {{ frontend_mode }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Ações Rápidas</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/formulario-terrenos-projetos" 
+               class="bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-center">
+                <div class="font-medium">Cadastrar Terreno</div>
+                <div class="text-sm opacity-90">Novo formulário de terreno</div>
+            </a>
+            
+            <a href="/projetos" 
+               class="bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors text-center">
+                <div class="font-medium">Gerenciar Projetos</div>
+                <div class="text-sm opacity-90">CRUD de projetos</div>
+            </a>
+            
+            <a href="/docs" 
+               class="bg-gray-600 text-white px-4 py-3 rounded-md hover:bg-gray-700 transition-colors text-center">
+                <div class="font-medium">API Documentation</div>
+                <div class="text-sm opacity-90">Swagger UI</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Lista Recente de Terrenos -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Terrenos Recentes</h3>
+            <button 
+                hx-get="/formulario-terrenos-projetos?limit=5" 
+                hx-target="#terrenos-recentes" 
+                hx-trigger="click"
+                class="text-blue-600 hover:text-blue-800 text-sm">
+                Atualizar
+            </button>
+        </div>
+        <div id="terrenos-recentes">
+            <div class="text-gray-500 text-sm">Clique em "Atualizar" para carregar terrenos</div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Auto-refresh das estatísticas a cada 30 segundos
+setInterval(() => {
+    // Refresh automático do status de saúde
+    htmx.trigger('#health-status button', 'click');
+}, 30000);
+</script>
+{% endblock %}
+{% endblock %}
