@@ -152,10 +152,20 @@ async def criar_terreno_web(request: Request):
         for i in range(1, lados_poligono + 1):
             angulo_key = f"angulo_{i}"
             angulo_value = form_data.get(angulo_key)
-            if angulo_value:
-                angulos_internos.append(float(angulo_value))
+            logger.info(f"Ângulo {i} ({angulo_key}): '{angulo_value}'")
+            
+            if angulo_value and angulo_value.strip():
+                try:
+                    angulo_float = float(angulo_value)
+                    angulos_internos.append(angulo_float)
+                except ValueError:
+                    logger.error(f"Erro ao converter ângulo {i}: '{angulo_value}'")
+                    raise HTTPException(status_code=400, detail=f"Ângulo {i} deve ser um número válido")
             else:
+                logger.warning(f"Ângulo {i} está vazio ou nulo")
                 angulos_internos.append(0.0)
+        
+        logger.info(f"Ângulos processados: {angulos_internos}")
         
         # Cria objeto de dados do terreno
         terreno_data = FormularioTerrenosProjetosCreate(

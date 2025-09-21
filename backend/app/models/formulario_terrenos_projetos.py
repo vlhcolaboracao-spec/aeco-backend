@@ -84,22 +84,28 @@ class FormularioTerrenosProjetosBase(BaseModel):
         if not isinstance(v, list):
             raise ValueError('Ângulos internos deve ser uma lista')
         
-        # Verifica se todos os ângulos são números positivos
-        for angulo in v:
-            if not isinstance(angulo, (int, float)) or angulo <= 0 or angulo >= 180:
-                raise ValueError('Cada ângulo deve estar entre 0 e 180 graus')
+        # Converte para float e verifica se todos os ângulos são números positivos
+        angulos_convertidos = []
+        for i, angulo in enumerate(v):
+            try:
+                angulo_float = float(angulo)
+                if angulo_float <= 0 or angulo_float >= 180:
+                    raise ValueError(f'Ângulo {i+1} deve estar entre 0 e 180 graus (valor: {angulo_float})')
+                angulos_convertidos.append(angulo_float)
+            except (ValueError, TypeError):
+                raise ValueError(f'Ângulo {i+1} deve ser um número válido (valor: {angulo})')
         
         # Verifica se a soma não excede 360 graus
-        soma_angulos = sum(v)
+        soma_angulos = sum(angulos_convertidos)
         if soma_angulos > 360:
             raise ValueError(f'A soma dos ângulos internos ({soma_angulos:.2f}°) não pode exceder 360°')
         
         # Verifica se o número de ângulos corresponde ao número de lados
         lados = info.data.get('lados_poligono')
-        if lados and len(v) != lados:
+        if lados and len(angulos_convertidos) != lados:
             raise ValueError(f'Deve haver exatamente {lados} ângulos para {lados} lados')
         
-        return v
+        return angulos_convertidos
 
     @field_validator('tipo_lote')
     @classmethod
