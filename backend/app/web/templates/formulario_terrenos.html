@@ -21,11 +21,12 @@
     <div class="bg-white shadow rounded-lg p-6">
         <form id="terreno-form" 
               hx-post="/formulario-terrenos-projetos" 
-              hx-target="#form-response" 
-              hx-swap="innerHTML"
+              hx-target="body"
+              hx-swap="none"
               hx-indicator="#loading-indicator"
               hx-on::before-request="showLoading()"
-              hx-on::after-request="handleFormResponse(event)">
+              hx-on::after-request="handleFormResponse(event)"
+              hx-on::response-error="handleFormError(event)">
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Coluna Esquerda -->
@@ -398,8 +399,12 @@ function handleFormResponse(event) {
     loadingIndicator.classList.add('hidden');
     submitBtn.disabled = false;
     
+    console.log('Resposta recebida:', event.detail.xhr.responseText);
+    
     try {
         const response = JSON.parse(event.detail.xhr.responseText);
+        console.log('Response parsed:', response);
+        
         if (response.success) {
             showSuccess(response.message);
             // Limpa o formulário após sucesso
@@ -417,6 +422,20 @@ function handleFormResponse(event) {
         console.error('Erro ao processar resposta:', error);
         showError('Erro de comunicação com o servidor');
     }
+}
+
+function handleFormError(event) {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Remove estado de carregamento
+    btnText.classList.remove('hidden');
+    loadingIndicator.classList.add('hidden');
+    submitBtn.disabled = false;
+    
+    console.error('Erro na requisição:', event.detail.xhr);
+    showError('Erro ao enviar formulário');
 }
 
 function updateAngulosInternos() {
