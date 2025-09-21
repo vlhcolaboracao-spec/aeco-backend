@@ -313,13 +313,13 @@
             <div class="bg-white shadow rounded-lg p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium text-gray-900">Terrenos Cadastrados</h3>
-                    <button 
-                        hx-get="/formulario-terrenos-projetos" 
-                        hx-target="#terrenos-list" 
-                        hx-trigger="click"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                        Carregar Lista
-                    </button>
+            <button 
+                hx-get="/terrenos-list" 
+                hx-target="#terrenos-list" 
+                hx-trigger="click"
+                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                Carregar Lista
+            </button>
                 </div>
                 <div id="terrenos-list">
                     <div class="text-gray-500 text-sm">Clique em "Carregar Lista" para ver os terrenos cadastrados</div>
