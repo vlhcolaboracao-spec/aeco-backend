@@ -3,7 +3,7 @@ Modelos Pydantic para Formulário de Terrenos de Projetos.
 """
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from bson import ObjectId
 
 
@@ -14,7 +14,7 @@ class PyObjectId(ObjectId):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v, field=None):
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid objectid")
         return ObjectId(v)
@@ -50,7 +50,8 @@ class FormularioTerrenosProjetosBase(BaseModel):
     # Observações
     observacoes: Optional[str] = Field(None, max_length=1000, description="Observações adicionais")
 
-    @validator('cep')
+    @field_validator('cep')
+    @classmethod
     def validate_cep(cls, v):
         """Valida formato do CEP"""
         # Remove caracteres não numéricos
@@ -59,7 +60,8 @@ class FormularioTerrenosProjetosBase(BaseModel):
             raise ValueError('CEP deve ter 8 dígitos')
         return cep_clean
 
-    @validator('estado')
+    @field_validator('estado')
+    @classmethod
     def validate_estado(cls, v):
         """Valida formato do estado (UF)"""
         if len(v) != 2 or not v.isupper():

@@ -34,7 +34,8 @@ class FormularioTerrenosRepository:
             
             # Converte para dict e adiciona timestamps
             terreno_dict = terreno_data.dict()
-            terreno_dict["created_at"] = terreno_dict["updated_at"] = terreno_dict.get("created_at")
+            from datetime import datetime
+            terreno_dict["created_at"] = terreno_dict["updated_at"] = datetime.now()
             
             result = await collection.insert_one(terreno_dict)
             

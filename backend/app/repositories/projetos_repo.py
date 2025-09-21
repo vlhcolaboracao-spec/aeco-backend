@@ -30,7 +30,8 @@ class ProjetosRepository:
             
             # Converte para dict e adiciona timestamps
             projeto_dict = projeto_data.dict()
-            projeto_dict["created_at"] = projeto_dict["updated_at"] = projeto_dict.get("created_at")
+            from datetime import datetime
+            projeto_dict["created_at"] = projeto_dict["updated_at"] = datetime.now()
             
             result = await collection.insert_one(projeto_dict)
             
