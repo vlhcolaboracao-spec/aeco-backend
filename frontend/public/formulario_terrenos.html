@@ -592,8 +592,9 @@
             medidaInput.id = `dimensao_${i}_medida`;
             medidaInput.step = '0.01';
             medidaInput.min = '0.01';
+            medidaInput.max = '999999.99';
             medidaInput.placeholder = '0.00';
-            medidaInput.className = 'flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500';
+            medidaInput.className = 'w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500';
             
             const unidadeSpan = document.createElement('span');
             unidadeSpan.textContent = 'm';
