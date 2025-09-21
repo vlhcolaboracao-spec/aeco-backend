@@ -196,50 +196,60 @@
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Características do Terreno</h3>
                             
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="lados_poligono" class="block text-sm font-medium text-gray-700 mb-1">
-                                        Lados do Polígono *
-                                    </label>
-                                    <input type="number" 
-                                           id="lados_poligono" 
-                                           name="lados_poligono" 
-                                           min="3" 
-                                           max="20" 
-                                           value="4"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                           required>
-                                </div>
-                                
-                                <div>
-                                    <label for="tipo_lote" class="block text-sm font-medium text-gray-700 mb-1">
-                                        Tipo de Lote *
-                                    </label>
-                                    <select id="tipo_lote" 
-                                            name="tipo_lote" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            required>
-                                        <option value="">Selecione</option>
-                                        <option value="Esquina">Esquina</option>
-                                        <option value="Fundo">Fundo</option>
-                                        <option value="Meio">Meio</option>
-                                        <option value="Canto">Canto</option>
-                                        <option value="Outro">Outro</option>
-                                    </select>
-                                </div>
-                            </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="lados_poligono" class="block text-sm font-medium text-gray-700 mb-1">
+                                Lados do Polígono *
+                            </label>
+                            <input type="number" 
+                                   id="lados_poligono" 
+                                   name="lados_poligono" 
+                                   min="3" 
+                                   max="10" 
+                                   value="4"
+                                   onchange="updateAngulosInternos()"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   required>
+                        </div>
+                        
+                        <div>
+                            <label for="tipo_lote" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tipo de Lote *
+                            </label>
+                            <select id="tipo_lote" 
+                                    name="tipo_lote" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required>
+                                <option value="">Selecione</option>
+                                <option value="Padrão">Padrão</option>
+                                <option value="Esquina">Esquina</option>
+                                <option value="Único na Quadra">Único na Quadra</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Ângulos Internos Dinâmicos -->
+                    <div id="angulos-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Ângulos Internos do Polígono *
+                        </label>
+                        <div id="angulos-inputs" class="grid grid-cols-2 gap-2">
+                            <!-- Será preenchido dinamicamente pelo JavaScript -->
+                        </div>
+                        <div id="soma-angulos" class="mt-2 text-sm text-gray-600">
+                            Soma dos ângulos: <span id="soma-total">0.00°</span>
+                        </div>
+                    </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label for="area" class="block text-sm font-medium text-gray-700 mb-1">
-                                        Área (m²) *
+                                        Área *
                                     </label>
-                                    <input type="number" 
+                                    <input type="text" 
                                            id="area" 
                                            name="area" 
-                                           step="0.01" 
-                                           min="0"
-                                           placeholder="99,99"
+                                           placeholder="Ex: 500,50 m²"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                            required>
                                 </div>
@@ -251,11 +261,11 @@
                                     <input type="number" 
                                            id="norte_verdadeiro" 
                                            name="norte_verdadeiro" 
-                                           step="0.1" 
+                                           step="0.01" 
                                            min="0" 
-                                           max="359.9"
+                                           max="359.99"
                                            value="0"
-                                           placeholder="0,0"
+                                           placeholder="0,00"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                            required>
                                 </div>
@@ -270,11 +280,24 @@
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         required>
                                     <option value="">Selecione</option>
-                                    <option value="Residencial">Residencial</option>
-                                    <option value="Comercial">Comercial</option>
-                                    <option value="Industrial">Industrial</option>
-                                    <option value="Rural">Rural</option>
-                                    <option value="Misto">Misto</option>
+                                    <option value="ZAD1">ZAD1</option>
+                                    <option value="ZAD2">ZAD2</option>
+                                    <option value="ZC1">ZC1</option>
+                                    <option value="ZC2">ZC2</option>
+                                    <option value="ZCT1">ZCT1</option>
+                                    <option value="ZCT2">ZCT2</option>
+                                    <option value="ZCT3">ZCT3</option>
+                                    <option value="ZCT4">ZCT4</option>
+                                    <option value="ZEIS">ZEIS</option>
+                                    <option value="ZH1">ZH1</option>
+                                    <option value="ZH2">ZH2</option>
+                                    <option value="ZH3">ZH3</option>
+                                    <option value="ZHL">ZHL</option>
+                                    <option value="ZI1">ZI1</option>
+                                    <option value="ZI2">ZI2</option>
+                                    <option value="ZIA1">ZIA1</option>
+                                    <option value="ZIA2">ZIA2</option>
+                                    <option value="ZII">ZII</option>
                                 </select>
                             </div>
 
@@ -343,10 +366,76 @@
     function resetForm() {
         document.getElementById('terreno-form').reset();
         document.getElementById('form-response').innerHTML = '';
+        updateAngulosInternos(); // Reset ângulos também
+    }
+
+    function updateAngulosInternos() {
+        const lados = parseInt(document.getElementById('lados_poligono').value) || 4;
+        const container = document.getElementById('angulos-inputs');
+        
+        // Limpa container
+        container.innerHTML = '';
+        
+        // Cria inputs para cada ângulo
+        for (let i = 1; i <= lados; i++) {
+            const div = document.createElement('div');
+            div.className = 'flex items-center space-x-2';
+            
+            const label = document.createElement('label');
+            label.textContent = `Ângulo ${i}:`;
+            label.className = 'text-sm font-medium text-gray-700 min-w-20';
+            
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.name = 'angulos_internos';
+            input.id = `angulo_${i}`;
+            input.step = '0.01';
+            input.min = '0';
+            input.max = '180';
+            input.placeholder = '0.00';
+            input.className = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500';
+            input.addEventListener('input', updateSomaAngulos);
+            
+            const span = document.createElement('span');
+            span.textContent = '°';
+            span.className = 'text-sm text-gray-600';
+            
+            div.appendChild(label);
+            div.appendChild(input);
+            div.appendChild(span);
+            container.appendChild(div);
+        }
+        
+        updateSomaAngulos();
+    }
+
+    function updateSomaAngulos() {
+        const inputs = document.querySelectorAll('input[name="angulos_internos"]');
+        let soma = 0;
+        
+        inputs.forEach(input => {
+            const valor = parseFloat(input.value) || 0;
+            soma += valor;
+        });
+        
+        const somaElement = document.getElementById('soma-total');
+        somaElement.textContent = soma.toFixed(2) + '°';
+        
+        // Alerta visual se exceder 360°
+        if (soma > 360) {
+            somaElement.parentElement.className = 'mt-2 text-sm text-red-600 font-semibold';
+            somaElement.parentElement.innerHTML = `⚠️ Soma dos ângulos: <span id="soma-total">${soma.toFixed(2)}°</span> (excede 360°)`;
+        } else {
+            somaElement.parentElement.className = 'mt-2 text-sm text-gray-600';
+            somaElement.parentElement.innerHTML = `Soma dos ângulos: <span id="soma-total">${soma.toFixed(2)}°</span>`;
+        }
     }
 
     // Auto-load da lista ao carregar a página
     document.addEventListener('DOMContentLoaded', function() {
+        // Inicializa os ângulos internos
+        updateAngulosInternos();
+        
         // Carrega a lista de terrenos automaticamente
         htmx.trigger('#terrenos-list', 'click');
     });

@@ -41,11 +41,12 @@ class FormularioTerrenosProjetosBase(BaseModel):
     cep: str = Field(..., min_length=8, max_length=10, description="CEP")
     
     # Características do Terreno
-    lados_poligono: int = Field(..., ge=3, le=20, description="Número de lados do polígono")
-    tipo_lote: str = Field(..., description="Tipo de lote (Esquina, Fundo, Meio, etc.)")
-    area: float = Field(..., gt=0, description="Área em metros quadrados")
-    norte_verdadeiro: float = Field(..., ge=0, lt=360, description="Norte verdadeiro em graus")
-    zona: str = Field(..., description="Zona (Residencial, Comercial, etc.)")
+    lados_poligono: int = Field(..., ge=3, le=10, description="Número de lados do polígono")
+    angulos_internos: List[float] = Field(..., description="Lista de ângulos internos do polígono")
+    tipo_lote: str = Field(..., description="Tipo de lote: Padrão, Esquina, Único na Quadra")
+    area: str = Field(..., min_length=1, max_length=20, description="Área total do terreno")
+    norte_verdadeiro: float = Field(..., ge=0, lt=360, description="Norte verdadeiro em graus (máximo 2 casas decimais)")
+    zona: str = Field(..., description="Zona conforme legislação de Sorriso/MT")
     
     # Observações
     observacoes: Optional[str] = Field(None, max_length=1000, description="Observações adicionais")
@@ -66,6 +67,72 @@ class FormularioTerrenosProjetosBase(BaseModel):
         """Valida formato do estado (UF)"""
         if len(v) != 2 or not v.isupper():
             raise ValueError('Estado deve ser uma UF válida (2 letras maiúsculas)')
+        return v
+
+    @field_validator('lados_poligono')
+    @classmethod
+    def validate_lados_poligono(cls, v):
+        """Valida número de lados do polígono"""
+        if v < 3 or v > 10:
+            raise ValueError('Número de lados deve estar entre 3 e 10')
+        return v
+
+    @field_validator('angulos_internos')
+    @classmethod
+    def validate_angulos_internos(cls, v, info):
+        """Valida ângulos internos do polígono"""
+        if not isinstance(v, list):
+            raise ValueError('Ângulos internos deve ser uma lista')
+        
+        # Verifica se todos os ângulos são números positivos
+        for angulo in v:
+            if not isinstance(angulo, (int, float)) or angulo <= 0 or angulo >= 180:
+                raise ValueError('Cada ângulo deve estar entre 0 e 180 graus')
+        
+        # Verifica se a soma não excede 360 graus
+        soma_angulos = sum(v)
+        if soma_angulos > 360:
+            raise ValueError(f'A soma dos ângulos internos ({soma_angulos:.2f}°) não pode exceder 360°')
+        
+        # Verifica se o número de ângulos corresponde ao número de lados
+        lados = info.data.get('lados_poligono')
+        if lados and len(v) != lados:
+            raise ValueError(f'Deve haver exatamente {lados} ângulos para {lados} lados')
+        
+        return v
+
+    @field_validator('tipo_lote')
+    @classmethod
+    def validate_tipo_lote(cls, v):
+        """Valida tipo de lote"""
+        tipos_validos = ['Padrão', 'Esquina', 'Único na Quadra']
+        if v not in tipos_validos:
+            raise ValueError(f'Tipo de lote deve ser um dos seguintes: {", ".join(tipos_validos)}')
+        return v
+
+    @field_validator('norte_verdadeiro')
+    @classmethod
+    def validate_norte_verdadeiro(cls, v):
+        """Valida norte verdadeiro com máximo 2 casas decimais"""
+        if v < 0 or v >= 360:
+            raise ValueError('Norte verdadeiro deve estar entre 0 e 360 graus')
+        
+        # Verifica se tem no máximo 2 casas decimais
+        if round(v, 2) != v:
+            raise ValueError('Norte verdadeiro deve ter no máximo 2 casas decimais')
+        
+        return v
+
+    @field_validator('zona')
+    @classmethod
+    def validate_zona(cls, v):
+        """Valida zona conforme legislação de Sorriso/MT"""
+        zonas_validas = [
+            'ZAD1', 'ZAD2', 'ZC1', 'ZC2', 'ZCT1', 'ZCT2', 'ZCT3', 'ZCT4',
+            'ZEIS', 'ZH1', 'ZH2', 'ZH3', 'ZHL', 'ZI1', 'ZI2', 'ZIA1', 'ZIA2', 'ZII'
+        ]
+        if v not in zonas_validas:
+            raise ValueError(f'Zona deve ser uma das seguintes: {", ".join(zonas_validas)}')
         return v
 
 

@@ -113,23 +113,7 @@ async def formulario_terrenos(request: Request):
 
 
 @router.post("/formulario-terrenos-projetos", response_class=JSONResponse)
-async def criar_terreno_web(
-    matricula: str = Form(...),
-    data: str = Form(...),
-    municipio: str = Form(...),
-    estado: str = Form(...),
-    pais: str = Form("BRASIL"),
-    bairro: str = Form(...),
-    logradouro: str = Form(...),
-    numero: str = Form(...),
-    cep: str = Form(...),
-    lados_poligono: int = Form(...),
-    tipo_lote: str = Form(...),
-    area: float = Form(...),
-    norte_verdadeiro: float = Form(...),
-    zona: str = Form(...),
-    observacoes: Optional[str] = Form(None)
-):
+async def criar_terreno_web(request: Request):
     """
     Endpoint para criar terreno via formulário web.
     Retorna JSON para HTMX.
@@ -137,8 +121,38 @@ async def criar_terreno_web(
     try:
         from datetime import datetime
         
+        # Processa dados do formulário
+        form_data = await request.form()
+        
+        # Extrai dados básicos
+        matricula = form_data.get("matricula")
+        data_str = form_data.get("data")
+        municipio = form_data.get("municipio")
+        estado = form_data.get("estado")
+        pais = form_data.get("pais", "BRASIL")
+        bairro = form_data.get("bairro")
+        logradouro = form_data.get("logradouro")
+        numero = form_data.get("numero")
+        cep = form_data.get("cep")
+        lados_poligono = int(form_data.get("lados_poligono"))
+        tipo_lote = form_data.get("tipo_lote")
+        area = form_data.get("area")
+        norte_verdadeiro = float(form_data.get("norte_verdadeiro"))
+        zona = form_data.get("zona")
+        observacoes = form_data.get("observacoes")
+        
         # Converte data string para datetime
-        data_obj = datetime.fromisoformat(data)
+        data_obj = datetime.fromisoformat(data_str)
+        
+        # Processa ângulos internos
+        angulos_internos = []
+        for i in range(1, lados_poligono + 1):
+            angulo_key = f"angulo_{i}"
+            angulo_value = form_data.get(angulo_key)
+            if angulo_value:
+                angulos_internos.append(float(angulo_value))
+            else:
+                angulos_internos.append(0.0)
         
         # Cria objeto de dados do terreno
         terreno_data = FormularioTerrenosProjetosCreate(
@@ -152,6 +166,7 @@ async def criar_terreno_web(
             numero=numero,
             cep=cep,
             lados_poligono=lados_poligono,
+            angulos_internos=angulos_internos,
             tipo_lote=tipo_lote,
             area=area,
             norte_verdadeiro=norte_verdadeiro,
