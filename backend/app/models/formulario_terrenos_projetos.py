@@ -96,8 +96,8 @@ class FormularioTerrenosProjetosUpdate(BaseModel):
 class FormularioTerrenosProjetosInDB(FormularioTerrenosProjetosBase):
     """Modelo interno do terreno no banco"""
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: Optional[datetime] = Field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
 
     model_config = {
         "validate_by_name": True,
@@ -115,12 +115,12 @@ class FormularioTerrenosProjetosResponse(BaseModel):
     """Modelo para resposta de terreno"""
     success: bool
     message: str
-    terreno: Optional[FormularioTerrenosProjetos] = None
+    terreno: Optional[FormularioTerrenosProjetosInDB] = None
 
 
 class FormularioTerrenosProjetosListResponse(BaseModel):
     """Modelo para lista de terrenos"""
     success: bool
     message: str
-    terrenos: List[FormularioTerrenosProjetos] = []
+    terrenos: List[FormularioTerrenosProjetosInDB] = []
     total: int = 0
