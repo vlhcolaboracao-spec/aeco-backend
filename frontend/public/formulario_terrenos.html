@@ -431,14 +431,18 @@
         }
     }
 
-    // Auto-load da lista ao carregar a página
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializa os ângulos internos
-        updateAngulosInternos();
-        
-        // Carrega a lista de terrenos automaticamente
-        htmx.trigger('#terrenos-list', 'click');
-    });
+// Auto-load da lista ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    // Define data padrão como hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = hoje;
+    
+    // Inicializa os ângulos internos
+    updateAngulosInternos();
+    
+    // Carrega a lista de terrenos automaticamente
+    htmx.trigger('#terrenos-list', 'click');
+});
     </script>
 </body>
 </html>

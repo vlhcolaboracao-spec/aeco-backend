@@ -135,6 +135,22 @@ class FormularioTerrenosProjetosBase(BaseModel):
             raise ValueError(f'Zona deve ser uma das seguintes: {", ".join(zonas_validas)}')
         return v
 
+    @field_validator('matricula', 'municipio', 'bairro', 'logradouro', 'numero', 'area', mode='before')
+    @classmethod
+    def convert_to_uppercase(cls, v):
+        """Converte campos de texto para maiúsculas"""
+        if isinstance(v, str):
+            return v.upper()
+        return v
+
+    @field_validator('tipo_lote', mode='before')
+    @classmethod
+    def convert_tipo_lote_to_title(cls, v):
+        """Converte tipo de lote para formato título"""
+        if isinstance(v, str):
+            return v.title()
+        return v
+
 
 class FormularioTerrenosProjetosCreate(FormularioTerrenosProjetosBase):
     """Modelo para criação de terreno"""

@@ -121,8 +121,11 @@ async def criar_terreno_web(request: Request):
     try:
         from datetime import datetime
         
+        logger.info("Iniciando processamento do formulário de terrenos")
+        
         # Processa dados do formulário
         form_data = await request.form()
+        logger.info(f"Dados do formulário recebidos: {dict(form_data)}")
         
         # Extrai dados básicos
         matricula = form_data.get("matricula")
@@ -174,8 +177,12 @@ async def criar_terreno_web(request: Request):
             observacoes=observacoes
         )
         
+        logger.info(f"Tentando salvar terreno no banco: {terreno_data.dict()}")
+        
         # Salva no banco
         terreno = await formulario_terrenos_repo.create_terreno(terreno_data)
+        
+        logger.info(f"Terreno salvo com sucesso: {terreno.id}")
         
         return JSONResponse(content={
             "success": True,

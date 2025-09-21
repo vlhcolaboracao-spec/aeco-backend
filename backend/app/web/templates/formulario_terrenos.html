@@ -380,6 +380,10 @@ function updateSomaAngulos() {
 
 // Auto-load da lista ao carregar a página
 document.addEventListener('DOMContentLoaded', function() {
+    // Define data padrão como hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = hoje;
+    
     // Inicializa os ângulos internos
     updateAngulosInternos();
     
