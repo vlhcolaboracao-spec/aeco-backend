@@ -364,3 +364,109 @@ async def terrenos_list_widget(limit: int = 10):
             Erro ao carregar lista de terrenos.
         </div>
         """)
+
+
+@router.get("/processos", response_class=HTMLResponse)
+async def pagina_processos(request: Request):
+    """
+    Página de cadastro de processos Revit.
+    """
+    try:
+        frontend_mode = getattr(settings, 'frontend_mode', 'static')
+        
+        return templates.TemplateResponse(
+            "processos.html",
+            {
+                "request": request,
+                "frontend_mode": frontend_mode,
+                "api_base_url": settings.api_base_url
+            }
+        )
+    except Exception as e:
+        logger.error(f"Erro ao carregar página de processos: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+
+@router.get("/orquestracao", response_class=HTMLResponse)
+async def pagina_orquestracao(request: Request):
+    """
+    Página de orquestração de processos Revit.
+    """
+    try:
+        frontend_mode = getattr(settings, 'frontend_mode', 'static')
+        
+        return templates.TemplateResponse(
+            "orquestracao.html",
+            {
+                "request": request,
+                "frontend_mode": frontend_mode,
+                "api_base_url": settings.api_base_url
+            }
+        )
+    except Exception as e:
+        logger.error(f"Erro ao carregar página de orquestração: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+
+@router.post("/processos", response_class=JSONResponse)
+async def criar_processo_web(request: Request):
+    """
+    Endpoint para criar processo via formulário web.
+    Retorna JSON para HTMX.
+    """
+    try:
+        logger.info("Iniciando processamento do formulário de processos")
+        
+        # Processa dados do formulário
+        form_data = await request.form()
+        logger.info(f"Dados do formulário recebidos: {dict(form_data)}")
+        
+        # Extrai dados básicos
+        nome = form_data.get("nome")
+        descricao = form_data.get("descricao")
+        versao = form_data.get("versao")
+        categoria = form_data.get("categoria")
+        tipo = form_data.get("tipo")
+        timeout_segundos = int(form_data.get("timeout_segundos", 300))
+        tentativas_retry = int(form_data.get("tentativas_retry", 3))
+        ordem_execucao = int(form_data.get("ordem_execucao", 1))
+        ambiente = form_data.get("ambiente", "desenvolvimento")
+        tags = form_data.get("tags", "")
+        ativo = form_data.get("ativo") == "on"
+        parametros_entrada = form_data.get("parametros_entrada", "{}")
+        
+        # Processa arquivo se fornecido
+        arquivo_principal = None
+        arquivo_principal_file = form_data.get("arquivo_principal")
+        if arquivo_principal_file and hasattr(arquivo_principal_file, 'filename'):
+            arquivo_principal = arquivo_principal_file.filename
+        
+        # Processa descrição do processo se for tipo textual
+        descricao_processo = form_data.get("descricao_processo", "")
+        
+        logger.info(f"Processo criado: {nome} - {categoria} - {tipo}")
+        
+        # Por enquanto, apenas retorna sucesso
+        # TODO: Implementar salvamento no banco de dados
+        return JSONResponse(content={
+            "success": True,
+            "message": f"Processo '{nome}' criado com sucesso!",
+            "processo": {
+                "nome": nome,
+                "descricao": descricao,
+                "versao": versao,
+                "categoria": categoria,
+                "tipo": tipo,
+                "ativo": ativo
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao criar processo: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Erro interno: {str(e)}"
+            }
+        )

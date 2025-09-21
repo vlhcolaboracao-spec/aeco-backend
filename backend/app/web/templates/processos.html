@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Processos Revit - Sistema AECO{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">Processos Revit</h2>
+                <p class="text-gray-600 mt-1">Cadastro e gerenciamento de processos para automação do Revit</p>
+            </div>
+            <a href="/" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
+                Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <form id="processo-form" 
+              hx-post="/processos" 
+              hx-target="body"
+              hx-swap="none"
+              hx-indicator="#loading-indicator"
+              hx-on::before-request="showLoading()"
+              hx-on::after-request="handleFormResponse(event)"
+              hx-on::response-error="handleFormError(event)">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Coluna Esquerda -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Identificação do Processo</h3>
+                    
+                    <div>
+                        <label for="nome" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nome do Processo *
+                        </label>
+                        <input type="text" 
+                               id="nome" 
+                               name="nome" 
+                               placeholder="Ex: Criar Projeto Arquitetônico"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               required>
+                    </div>
+
+                    <div>
+                        <label for="descricao" class="block text-sm font-medium text-gray-700 mb-1">
+                            Descrição *
+                        </label>
+                        <textarea id="descricao" 
+                                  name="descricao" 
+                                  rows="3"
+                                  placeholder="Descreva o que este processo faz..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  required></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="versao" class="block text-sm font-medium text-gray-700 mb-1">
+                                Versão *
+                            </label>
+                            <input type="text" 
+                                   id="versao" 
+                                   name="versao" 
+                                   placeholder="Ex: 1.0.0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   required>
+                        </div>
+
+                        <div>
+                            <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1">
+                                Categoria *
+                            </label>
+                            <select id="categoria" 
+                                    name="categoria" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required>
+                                <option value="">Selecione uma categoria</option>
+                                <option value="arquitetura">Arquitetura</option>
+                                <option value="estrutura">Estrutura</option>
+                                <option value="mep">MEP</option>
+                                <option value="coordenacao">Coordenação</option>
+                                <option value="documentacao">Documentação</option>
+                                <option value="analise">Análise</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mt-6">Configuração do Processo</h3>
+                    
+                    <div>
+                        <label for="tipo" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tipo do Processo *
+                        </label>
+                        <select id="tipo" 
+                                name="tipo" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                                onchange="toggleFileUpload()">
+                            <option value="">Selecione o tipo</option>
+                            <option value="dynamo_script">Script Dynamo (.dyn)</option>
+                            <option value="python_function">Função Python (.py)</option>
+                            <option value="command_sequence">Sequência de Comandos (.json)</option>
+                            <option value="text_description">Descrição Textual</option>
+                        </select>
+                    </div>
+
+                    <!-- Upload de Arquivo (aparece quando tipo não é "text_description") -->
+                    <div id="file-upload-section" class="hidden">
+                        <label for="arquivo_principal" class="block text-sm font-medium text-gray-700 mb-1">
+                            Arquivo Principal *
+                        </label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="arquivo_principal" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                        <span>Fazer upload de arquivo</span>
+                                        <input id="arquivo_principal" 
+                                               name="arquivo_principal" 
+                                               type="file" 
+                                               class="sr-only"
+                                               accept=".dyn,.py,.json"
+                                               onchange="handleFileUpload(event)">
+                                    </label>
+                                    <p class="pl-1">ou arraste e solte</p>
+                                </div>
+                                <p class="text-xs text-gray-500">
+                                    PNG, JPG, GIF até 10MB
+                                </p>
+                            </div>
+                        </div>
+                        <div id="file-info" class="mt-2 text-sm text-gray-600 hidden"></div>
+                    </div>
+
+                    <!-- Descrição Textual (aparece quando tipo é "text_description") -->
+                    <div id="text-description-section" class="hidden">
+                        <label for="descricao_processo" class="block text-sm font-medium text-gray-700 mb-1">
+                            Descrição do Processo *
+                        </label>
+                        <textarea id="descricao_processo" 
+                                  name="descricao_processo" 
+                                  rows="6"
+                                  placeholder="Descreva detalhadamente os passos do processo..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Configurações de Execução</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="timeout_segundos" class="block text-sm font-medium text-gray-700 mb-1">
+                                Timeout (segundos)
+                            </label>
+                            <input type="number" 
+                                   id="timeout_segundos" 
+                                   name="timeout_segundos" 
+                                   value="300"
+                                   min="30"
+                                   max="3600"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <div>
+                            <label for="tentativas_retry" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tentativas de Retry
+                            </label>
+                            <input type="number" 
+                                   id="tentativas_retry" 
+                                   name="tentativas_retry" 
+                                   value="3"
+                                   min="0"
+                                   max="10"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="ordem_execucao" class="block text-sm font-medium text-gray-700 mb-1">
+                            Ordem de Execução
+                        </label>
+                        <input type="number" 
+                               id="ordem_execucao" 
+                               name="ordem_execucao" 
+                               value="1"
+                               min="1"
+                               max="100"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Define a ordem quando usado em sequências</p>
+                    </div>
+
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mt-6">Controle e Organização</h3>
+                    
+                    <div>
+                        <label for="ambiente" class="block text-sm font-medium text-gray-700 mb-1">
+                            Ambiente
+                        </label>
+                        <select id="ambiente" 
+                                name="ambiente" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="desenvolvimento">Desenvolvimento</option>
+                            <option value="teste">Teste</option>
+                            <option value="producao">Produção</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tags (separadas por vírgula)
+                        </label>
+                        <input type="text" 
+                               id="tags" 
+                               name="tags" 
+                               placeholder="Ex: revit, arquitetura, automação"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               id="ativo" 
+                               name="ativo" 
+                               checked
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="ativo" class="ml-2 block text-sm text-gray-900">
+                            Processo ativo
+                        </label>
+                    </div>
+
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mt-6">Parâmetros de Entrada</h3>
+                    
+                    <div>
+                        <label for="parametros_entrada" class="block text-sm font-medium text-gray-700 mb-1">
+                            Schema JSON dos Parâmetros
+                        </label>
+                        <textarea id="parametros_entrada" 
+                                  name="parametros_entrada" 
+                                  rows="6"
+                                  placeholder='{"parametros": [{"nome": "projectName", "tipo": "string", "obrigatorio": true, "descricao": "Nome do projeto"}]}'
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Define os parâmetros que o processo espera receber</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex justify-end space-x-4 mt-8 pt-6 border-t">
+                <button type="button" 
+                        onclick="resetForm()"
+                        class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Limpar Formulário
+                </button>
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Salvar Processo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg">
+        <div class="flex items-center space-x-2">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span>Salvando processo...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFileUpload() {
+    const tipo = document.getElementById('tipo').value;
+    const fileSection = document.getElementById('file-upload-section');
+    const textSection = document.getElementById('text-description-section');
+    
+    if (tipo === 'text_description') {
+        fileSection.classList.add('hidden');
+        textSection.classList.remove('hidden');
+        document.getElementById('arquivo_principal').required = false;
+        document.getElementById('descricao_processo').required = true;
+    } else {
+        fileSection.classList.remove('hidden');
+        textSection.classList.add('hidden');
+        document.getElementById('arquivo_principal').required = true;
+        document.getElementById('descricao_processo').required = false;
+    }
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    const fileInfo = document.getElementById('file-info');
+    
+    if (file) {
+        fileInfo.innerHTML = `
+            <strong>Arquivo selecionado:</strong> ${file.name}<br>
+            <strong>Tamanho:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+            <strong>Tipo:</strong> ${file.type || 'Não especificado'}
+        `;
+        fileInfo.classList.remove('hidden');
+    } else {
+        fileInfo.classList.add('hidden');
+    }
+}
+
+function resetForm() {
+    document.getElementById('processo-form').reset();
+    document.getElementById('file-upload-section').classList.add('hidden');
+    document.getElementById('text-description-section').classList.add('hidden');
+    document.getElementById('file-info').classList.add('hidden');
+    document.getElementById('arquivo_principal').required = false;
+    document.getElementById('descricao_processo').required = false;
+}
+
+function showLoading() {
+    document.getElementById('loading-indicator').classList.remove('htmx-indicator');
+}
+
+function handleFormResponse(event) {
+    const response = event.detail.xhr.response;
+    const data = JSON.parse(response);
+    
+    if (data.success) {
+        // Mostrar mensagem de sucesso
+        showNotification('Processo salvo com sucesso!', 'success');
+        // Limpar formulário
+        resetForm();
+    } else {
+        showNotification(data.message || 'Erro ao salvar processo', 'error');
+    }
+}
+
+function handleFormError(event) {
+    const response = event.detail.xhr.response;
+    let message = 'Erro interno do servidor';
+    
+    try {
+        const data = JSON.parse(response);
+        message = data.detail || data.message || message;
+    } catch (e) {
+        // Usar mensagem padrão
+    }
+    
+    showNotification(message, 'error');
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
