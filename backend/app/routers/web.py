@@ -167,6 +167,35 @@ async def criar_terreno_web(request: Request):
         
         logger.info(f"Ângulos processados: {angulos_internos}")
         
+        # Processa dimensões dos lados
+        dimensoes_lados = []
+        for i in range(1, lados_poligono + 1):
+            tipo_key = f"dimensao_{i}_tipo"
+            medida_key = f"dimensao_{i}_medida"
+            tipo_value = form_data.get(tipo_key)
+            medida_value = form_data.get(medida_key)
+            
+            logger.info(f"Dimensão {i} - Tipo: '{tipo_value}', Medida: '{medida_value}'")
+            
+            if not tipo_value or not medida_value:
+                logger.error(f"Dimensão {i} está incompleta - Tipo: '{tipo_value}', Medida: '{medida_value}'")
+                raise HTTPException(status_code=400, detail=f"Dimensão {i} deve ter tipo e medida preenchidos")
+            
+            try:
+                medida_float = float(medida_value)
+                if medida_float <= 0:
+                    raise HTTPException(status_code=400, detail=f"Medida da dimensão {i} deve ser maior que zero")
+                
+                dimensoes_lados.append({
+                    "tipo": tipo_value,
+                    "medida": medida_float
+                })
+            except ValueError:
+                logger.error(f"Erro ao converter medida da dimensão {i}: '{medida_value}'")
+                raise HTTPException(status_code=400, detail=f"Medida da dimensão {i} deve ser um número válido")
+        
+        logger.info(f"Dimensões processadas: {dimensoes_lados}")
+        
         # Cria objeto de dados do terreno
         terreno_data = FormularioTerrenosProjetosCreate(
             matricula=matricula,
@@ -180,6 +209,7 @@ async def criar_terreno_web(request: Request):
             cep=cep,
             lados_poligono=lados_poligono,
             angulos_internos=angulos_internos,
+            dimensoes_lados=dimensoes_lados,
             tipo_lote=tipo_lote,
             area=area,
             norte_verdadeiro=norte_verdadeiro,

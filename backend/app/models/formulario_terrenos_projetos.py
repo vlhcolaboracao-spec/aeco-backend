@@ -2,7 +2,7 @@
 Modelos Pydantic para Formulário de Terrenos de Projetos.
 """
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Union
 from pydantic import BaseModel, Field, field_validator
 from bson import ObjectId
 
@@ -43,6 +43,7 @@ class FormularioTerrenosProjetosBase(BaseModel):
     # Características do Terreno
     lados_poligono: int = Field(..., ge=3, le=10, description="Número de lados do polígono")
     angulos_internos: List[float] = Field(..., description="Lista de ângulos internos do polígono")
+    dimensoes_lados: List[Dict[str, Union[str, float]]] = Field(..., description="Lista de dimensões dos lados do terreno")
     tipo_lote: str = Field(..., description="Tipo de lote: Padrão, Esquina, Único na Quadra")
     area: str = Field(..., min_length=1, max_length=20, description="Área total do terreno")
     norte_verdadeiro: float = Field(..., ge=0, lt=360, description="Norte verdadeiro em graus (máximo 2 casas decimais)")
@@ -106,6 +107,43 @@ class FormularioTerrenosProjetosBase(BaseModel):
             raise ValueError(f'Deve haver exatamente {lados} ângulos para {lados} lados')
         
         return angulos_convertidos
+
+    @field_validator('dimensoes_lados')
+    @classmethod
+    def validate_dimensoes_lados(cls, v, info):
+        """Valida dimensões dos lados do terreno"""
+        if not isinstance(v, list):
+            raise ValueError('Dimensões dos lados deve ser uma lista')
+        
+        lados = info.data.get('lados_poligono')
+        if lados and len(v) != lados:
+            raise ValueError(f'Deve haver exatamente {lados} dimensões para {lados} lados')
+        
+        dimensoes_validas = []
+        for i, dimensao in enumerate(v):
+            if not isinstance(dimensao, dict):
+                raise ValueError(f'Dimensão {i+1} deve ser um objeto com tipo e medida')
+            
+            if 'tipo' not in dimensao or 'medida' not in dimensao:
+                raise ValueError(f'Dimensão {i+1} deve ter campos "tipo" e "medida"')
+            
+            tipo = dimensao['tipo']
+            tipos_validos = ['Alinhamento Predial', 'Fundos', 'Divisa Lateral']
+            if tipo not in tipos_validos:
+                raise ValueError(f'Tipo da dimensão {i+1} deve ser um dos seguintes: {", ".join(tipos_validos)}')
+            
+            try:
+                medida_float = float(dimensao['medida'])
+                if medida_float <= 0:
+                    raise ValueError(f'Medida da dimensão {i+1} deve ser maior que zero')
+                dimensoes_validas.append({
+                    'tipo': tipo,
+                    'medida': medida_float
+                })
+            except (ValueError, TypeError):
+                raise ValueError(f'Medida da dimensão {i+1} deve ser um número válido')
+        
+        return dimensoes_validas
 
     @field_validator('tipo_lote')
     @classmethod
