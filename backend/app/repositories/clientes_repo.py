@@ -32,6 +32,17 @@ class ClientesRepository:
             
             # Converte para dict e adiciona timestamps
             cliente_dict = cliente_data.model_dump()
+            
+            # Converte datetime.date para datetime.datetime se necessário
+            if cliente_dict.get("data_nascimento_fundacao"):
+                from datetime import date
+                if isinstance(cliente_dict["data_nascimento_fundacao"], date):
+                    # Converte date para datetime (meia-noite)
+                    cliente_dict["data_nascimento_fundacao"] = datetime.combine(
+                        cliente_dict["data_nascimento_fundacao"], 
+                        datetime.min.time()
+                    )
+            
             cliente_dict["created_at"] = datetime.now()
             cliente_dict["updated_at"] = datetime.now()
             
@@ -143,6 +154,16 @@ class ClientesRepository:
             # Remove campos None e adiciona timestamp de atualização
             update_data = cliente_data.model_dump(exclude_unset=True)
             if update_data:
+                # Converte datetime.date para datetime.datetime se necessário
+                if update_data.get("data_nascimento_fundacao"):
+                    from datetime import date
+                    if isinstance(update_data["data_nascimento_fundacao"], date):
+                        # Converte date para datetime (meia-noite)
+                        update_data["data_nascimento_fundacao"] = datetime.combine(
+                            update_data["data_nascimento_fundacao"], 
+                            datetime.min.time()
+                        )
+                
                 update_data["updated_at"] = datetime.now()
                 
                 result = await collection.update_one(

@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     
     # Configurações do Frontend
-    frontend_mode: str = "static"  # "static" ou "jinja"
+    frontend_mode: str = "jinja"  # "static" ou "jinja"
     
     model_config = {
         "env_file": ".env",

@@ -12,19 +12,21 @@ import logging
 from ..config import settings
 from ..models.formulario_terrenos_projetos import FormularioTerrenosProjetosCreate
 from ..models.clientes import ClienteCreate
+from ..models.projeto import ProjetoCreate
 from ..repositories.formulario_terrenos_repo import formulario_terrenos_repo
 from ..repositories.clientes_repo import clientes_repo
+from ..repositories.projetos_repo import projetos_repo
 
 logger = logging.getLogger(__name__)
 
 # Configuração dos templates Jinja2
-templates = Jinja2Templates(directory="backend/app/web/templates")
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "..", "web", "templates"))
 
 # Router para rotas web
 router = APIRouter()
 
 # Montar arquivos estáticos
-router.mount("/static", StaticFiles(directory="backend/app/web/static"), name="static")
+router.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "web", "static")), name="static")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -662,6 +664,119 @@ async def criar_processo_web(request: Request):
         
     except Exception as e:
         logger.error(f"Erro ao criar processo: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Erro interno: {str(e)}"
+            }
+        )
+
+
+@router.get("/cadastro-projetos", response_class=HTMLResponse)
+async def cadastro_projetos(request: Request):
+    """
+    Página de cadastro de projetos.
+    """
+    try:
+        frontend_mode = getattr(settings, 'frontend_mode', 'static')
+        
+        if frontend_mode == "jinja":
+            # Serve template Jinja2
+            return templates.TemplateResponse(
+                "cadastro_projetos.html",
+                {
+                    "request": request,
+                    "frontend_mode": frontend_mode,
+                    "api_base_url": settings.api_base_url
+                }
+            )
+        else:
+            # Serve HTML estático
+            static_html_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend", "public", "cadastro_projetos.html")
+            if os.path.exists(static_html_path):
+                with open(static_html_path, "r", encoding="utf-8") as f:
+                    return HTMLResponse(content=f.read())
+            else:
+                raise HTTPException(status_code=404, detail="Página não encontrada")
+                
+    except Exception as e:
+        logger.error(f"Erro ao carregar página de cadastro de projetos: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+
+@router.post("/cadastro-projetos", response_class=JSONResponse)
+async def criar_projeto_web(request: Request):
+    """
+    Endpoint para criar projeto via formulário web.
+    Retorna JSON para HTMX.
+    """
+    try:
+        logger.info("Iniciando processamento do formulário de projetos")
+        
+        # Processa dados do formulário
+        form_data = await request.form()
+        logger.info(f"Dados do formulário recebidos: {dict(form_data)}")
+        
+        # Extrai dados do formulário
+        projeto_data = {
+            "nome_completo": form_data.get("nome_completo"),
+            "contato": form_data.get("contato"),
+            "estado_civil_composicao": form_data.get("estado_civil_composicao"),
+            "profissao_rotina": form_data.get("profissao_rotina"),
+            "tipologia": form_data.get("tipologia"),
+            "ambientes_desejados": form_data.get("ambientes_desejados"),
+            "prioridades": form_data.get("prioridades"),
+            "estilo_arquitetonico": form_data.get("estilo_arquitetonico"),
+            "materiais_interesse": form_data.get("materiais_interesse"),
+            "exemplos_referencias": form_data.get("exemplos_referencias"),
+            "uso_espacos_dia_dia": form_data.get("uso_espacos_dia_dia"),
+            "animais_estimacao": form_data.get("animais_estimacao"),
+            "necessidades_especiais": form_data.get("necessidades_especiais"),
+            "frequencia_visitas": form_data.get("frequencia_visitas"),
+            "orcamento_estimado": form_data.get("orcamento_estimado"),
+            "fonte_recursos": form_data.get("fonte_recursos"),
+            "prazo_entrega": form_data.get("prazo_entrega"),
+            "solucoes_sustentaveis": form_data.get("solucoes_sustentaveis"),
+            "nivel_automacao": form_data.get("nivel_automacao"),
+            "desejos_expectativas": form_data.get("desejos_expectativas"),
+            "restricoes": form_data.get("restricoes")
+        }
+        
+        # Remove campos vazios
+        projeto_data = {k: v for k, v in projeto_data.items() if v and v.strip()}
+        
+        # Valida se pelo menos um campo foi preenchido
+        if not projeto_data:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "message": "Pelo menos um campo deve ser preenchido"
+                }
+            )
+        
+        # Cria modelo Pydantic
+        projeto_create = ProjetoCreate(**projeto_data)
+        
+        # Salva no banco de dados
+        projeto_criado = await projetos_repo.create_projeto(projeto_create)
+        
+        logger.info(f"Projeto criado com sucesso: {projeto_criado.id}")
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": f"Projeto de '{projeto_criado.nome_completo or 'Cliente'}' cadastrado com sucesso!",
+            "projeto": {
+                "id": str(projeto_criado.id),
+                "nome_completo": projeto_criado.nome_completo,
+                "tipologia": projeto_criado.tipologia,
+                "created_at": projeto_criado.created_at.isoformat() if projeto_criado.created_at else None
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao criar projeto: {e}")
         return JSONResponse(
             status_code=500,
             content={
