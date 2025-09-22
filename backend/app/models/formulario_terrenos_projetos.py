@@ -45,6 +45,7 @@ class FormularioTerrenosProjetosBase(BaseModel):
     angulos_internos: List[float] = Field(..., description="Lista de ângulos internos do polígono")
     dimensoes_lados: List[Dict[str, Union[str, float]]] = Field(..., description="Lista de dimensões dos lados do terreno")
     tipo_lote: str = Field(..., description="Tipo de lote: Padrão, Esquina, Único na Quadra")
+    tipologia: str = Field(..., description="Tipologia do terreno: Residencial, Comercial, Misto")
     area: str = Field(..., min_length=1, max_length=20, description="Área total do terreno")
     norte_verdadeiro: float = Field(..., ge=0, lt=360, description="Norte verdadeiro em graus (máximo 2 casas decimais)")
     zona: str = Field(..., description="Zona conforme legislação de Sorriso/MT")
@@ -154,6 +155,15 @@ class FormularioTerrenosProjetosBase(BaseModel):
             raise ValueError(f'Tipo de lote deve ser um dos seguintes: {", ".join(tipos_validos)}')
         return v
 
+    @field_validator('tipologia')
+    @classmethod
+    def validate_tipologia(cls, v):
+        """Valida tipologia do terreno"""
+        tipologias_validas = ['Residencial', 'Comercial', 'Misto']
+        if v not in tipologias_validas:
+            raise ValueError(f'Tipologia deve ser uma das seguintes: {", ".join(tipologias_validas)}')
+        return v
+
     @field_validator('norte_verdadeiro')
     @classmethod
     def validate_norte_verdadeiro(cls, v):
@@ -214,6 +224,7 @@ class FormularioTerrenosProjetosUpdate(BaseModel):
     cep: Optional[str] = Field(None, min_length=8, max_length=10)
     lados_poligono: Optional[int] = Field(None, ge=3, le=20)
     tipo_lote: Optional[str] = None
+    tipologia: Optional[str] = None
     area: Optional[float] = Field(None, gt=0)
     norte_verdadeiro: Optional[float] = Field(None, ge=0, lt=360)
     zona: Optional[str] = None

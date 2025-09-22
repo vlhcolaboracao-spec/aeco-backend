@@ -28,7 +28,7 @@ class FormularioTerrenosRepository:
         return db[self.collection_name]
     
     async def create_terreno(self, terreno_data: FormularioTerrenosProjetosCreate) -> FormularioTerrenosProjetosInDB:
-        """Cria um novo terreno"""
+        """Cria um novo terreno e calcula automaticamente os parâmetros urbanísticos"""
         try:
             collection = await self.get_collection()
             
@@ -41,10 +41,54 @@ class FormularioTerrenosRepository:
             
             # Busca o terreno criado
             created_terreno = await collection.find_one({"_id": result.inserted_id})
-            return FormularioTerrenosProjetosInDB(**created_terreno)
+            terreno_obj = FormularioTerrenosProjetosInDB(**created_terreno)
+            
+            # Calcula automaticamente os parâmetros urbanísticos
+            try:
+                await self._calcular_parametros_urbanisticos(terreno_obj)
+            except Exception as calc_error:
+                logger.warning(f"Erro ao calcular parâmetros urbanísticos para terreno {terreno_obj.id}: {calc_error}")
+                # Não falha o cadastro do terreno se houver erro no cálculo dos parâmetros
+            
+            return terreno_obj
             
         except Exception as e:
             logger.error(f"Erro ao criar terreno: {e}")
+            raise
+    
+    async def _calcular_parametros_urbanisticos(self, terreno: FormularioTerrenosProjetosInDB):
+        """Calcula e salva os parâmetros urbanísticos para um terreno"""
+        try:
+            # Importa aqui para evitar import circular
+            from ..models.parametros_urbanisticos import ParametrosUrbanisticosCreate, DadosCalculoParametros
+            from ..repositories.parametros_urbanisticos_repo import parametros_urbanisticos_repo
+            from ..services.parametros_urbanisticos_service import parametros_service
+            
+            # Prepara dados para cálculo
+            dados_calculo = DadosCalculoParametros(
+                zona=terreno.zona,
+                tipologia=terreno.tipologia,
+                municipio=terreno.municipio
+            )
+            
+            # Calcula todos os parâmetros
+            parametros_calculados = await parametros_service.calcular_todos_parametros(dados_calculo)
+            
+            # Cria o documento de parâmetros urbanísticos
+            parametros_data = ParametrosUrbanisticosCreate(
+                terreno_id=terreno.id,
+                municipio=terreno.municipio,
+                legislacao="LC_108_2009_ALTERADA_LC_415_2023",
+                **parametros_calculados
+            )
+            
+            # Salva no banco
+            await parametros_urbanisticos_repo.create_parametros(parametros_data)
+            
+            logger.info(f"Parâmetros urbanísticos calculados e salvos para terreno {terreno.id}")
+            
+        except Exception as e:
+            logger.error(f"Erro ao calcular parâmetros urbanísticos: {e}")
             raise
     
     async def get_terreno_by_id(self, terreno_id: str) -> Optional[FormularioTerrenosProjetosInDB]:
