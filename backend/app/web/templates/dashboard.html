@@ -59,6 +59,22 @@
             </div>
         </div>
 
+        <!-- Estatísticas de Clientes -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Clientes</h3>
+            <div class="space-y-2">
+                <div class="text-2xl font-bold text-purple-600" id="clientes-count">-</div>
+                <div class="text-sm text-gray-500">Total de clientes</div>
+                <button 
+                    hx-get="/clientes/stats/summary" 
+                    hx-target="#clientes-count" 
+                    hx-trigger="click"
+                    class="text-purple-600 hover:text-purple-800 text-sm">
+                    Ver estatísticas
+                </button>
+            </div>
+        </div>
+
         <!-- API Info -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">API Info</h3>
@@ -76,11 +92,17 @@
     <!-- Ações Rápidas -->
     <div class="bg-white shadow rounded-lg p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Ações Rápidas</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <a href="/formulario-terrenos-projetos" 
                class="bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-center">
                 <div class="font-medium">Cadastrar Terreno</div>
                 <div class="text-sm opacity-90">Novo formulário de terreno</div>
+            </a>
+            
+            <a href="/cadastro-clientes" 
+               class="bg-purple-600 text-white px-4 py-3 rounded-md hover:bg-purple-700 transition-colors text-center">
+                <div class="font-medium">Cadastrar Cliente</div>
+                <div class="text-sm opacity-90">Novo cadastro de cliente</div>
             </a>
             
             <a href="/projetos" 
@@ -111,6 +133,23 @@
         </div>
         <div id="terrenos-recentes">
             <div class="text-gray-500 text-sm">Clique em "Atualizar" para carregar terrenos</div>
+        </div>
+    </div>
+
+    <!-- Lista Recente de Clientes -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Clientes Recentes</h3>
+            <button 
+                hx-get="/clientes-list?limit=5" 
+                hx-target="#clientes-recentes" 
+                hx-trigger="click"
+                class="text-purple-600 hover:text-purple-800 text-sm">
+                Atualizar
+            </button>
+        </div>
+        <div id="clientes-recentes">
+            <div class="text-gray-500 text-sm">Clique em "Atualizar" para carregar clientes</div>
         </div>
     </div>
 </div>

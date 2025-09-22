@@ -86,3 +86,19 @@ node_modules/
 
 # MongoDB dumps
 dump/
+
+# Arquivos do Revit (muito grandes para o GitHub)
+*.rvt
+*.rte
+*.rfa
+*.rft
+*.adsk
+*.3ds
+*.dwf
+*.dwfx
+*.nwc
+*.nwd
+*.ifc
+
+# Arquivos temporários do Office
+~$*

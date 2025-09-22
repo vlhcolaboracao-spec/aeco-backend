@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro de Clientes - Sistema AECO{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">Cadastro de Clientes</h2>
+                <p class="text-gray-600 mt-1">Cadastro de dados dos clientes do sistema AECO</p>
+            </div>
+            <a href="/" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
+                Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <form id="cliente-form" 
+              hx-post="/clientes" 
+              hx-target="body"
+              hx-swap="none"
+              hx-indicator="#loading-indicator"
+              hx-on::before-request="showLoading()"
+              hx-on::after-request="handleFormResponse(event)"
+              hx-on::response-error="handleFormError(event)">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Coluna Esquerda -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Identificação Básica</h3>
+                    
+                    <div>
+                        <label for="nome_completo_razao_social" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nome Completo ou Razão Social
+                        </label>
+                        <input type="text" 
+                               id="nome_completo_razao_social" 
+                               name="nome_completo_razao_social" 
+                               placeholder="Ex: João Silva ou Empresa LTDA"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="cpf_cnpj" class="block text-sm font-medium text-gray-700 mb-1">
+                            CPF/CNPJ
+                        </label>
+                        <input type="text" 
+                               id="cpf_cnpj" 
+                               name="cpf_cnpj" 
+                               placeholder="Ex: 123.456.789-00 ou 12.345.678/0001-90"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="rg_inscricao_estadual" class="block text-sm font-medium text-gray-700 mb-1">
+                            RG/Inscrição Estadual (se aplicável)
+                        </label>
+                        <input type="text" 
+                               id="rg_inscricao_estadual" 
+                               name="rg_inscricao_estadual" 
+                               placeholder="Ex: 12.345.678-9 ou 123456789"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="data_nascimento_fundacao" class="block text-sm font-medium text-gray-700 mb-1">
+                            Data de Nascimento ou de Fundação
+                        </label>
+                        <input type="date" 
+                               id="data_nascimento_fundacao" 
+                               name="data_nascimento_fundacao" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mt-6">🔹 Contato</h3>
+                    
+                    <div>
+                        <label for="telefone_principal" class="block text-sm font-medium text-gray-700 mb-1">
+                            Telefone Principal (celular/WhatsApp de preferência)
+                        </label>
+                        <input type="tel" 
+                               id="telefone_principal" 
+                               name="telefone_principal" 
+                               placeholder="Ex: (65) 99999-9999"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="telefone_secundario" class="block text-sm font-medium text-gray-700 mb-1">
+                            Telefone Secundário
+                        </label>
+                        <input type="tel" 
+                               id="telefone_secundario" 
+                               name="telefone_secundario" 
+                               placeholder="Ex: (65) 3544-1234"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                            E-mail
+                        </label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               placeholder="Ex: cliente@email.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="redes_sociais" class="block text-sm font-medium text-gray-700 mb-1">
+                            Redes Sociais (quando relevantes para o negócio)
+                        </label>
+                        <textarea id="redes_sociais" 
+                                  name="redes_sociais" 
+                                  rows="3"
+                                  placeholder="Ex: Instagram: @cliente, LinkedIn: cliente.linkedin.com"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">🔹 Endereço</h3>
+                    
+                    <div>
+                        <label for="logradouro" class="block text-sm font-medium text-gray-700 mb-1">
+                            Logradouro
+                        </label>
+                        <input type="text" 
+                               id="logradouro" 
+                               name="logradouro" 
+                               placeholder="Ex: Rua das Flores"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="numero" class="block text-sm font-medium text-gray-700 mb-1">
+                                Número
+                            </label>
+                            <input type="text" 
+                                   id="numero" 
+                                   name="numero" 
+                                   placeholder="Ex: 123"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label for="complemento" class="block text-sm font-medium text-gray-700 mb-1">
+                                Complemento
+                            </label>
+                            <input type="text" 
+                                   id="complemento" 
+                                   name="complemento" 
+                                   placeholder="Ex: Apto 45, Bloco A"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="bairro" class="block text-sm font-medium text-gray-700 mb-1">
+                            Bairro
+                        </label>
+                        <input type="text" 
+                               id="bairro" 
+                               name="bairro" 
+                               placeholder="Ex: Centro, Jardim das Américas"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="cidade" class="block text-sm font-medium text-gray-700 mb-1">
+                                Cidade
+                            </label>
+                            <input type="text" 
+                                   id="cidade" 
+                                   name="cidade" 
+                                   placeholder="Ex: Sorriso"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">
+                                Estado
+                            </label>
+                            <select id="estado" 
+                                    name="estado" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Selecione</option>
+                                <option value="MT">Mato Grosso</option>
+                                <option value="MS">Mato Grosso do Sul</option>
+                                <option value="GO">Goiás</option>
+                                <option value="DF">Distrito Federal</option>
+                                <option value="SP">São Paulo</option>
+                                <option value="RJ">Rio de Janeiro</option>
+                                <option value="PR">Paraná</option>
+                                <option value="RS">Rio Grande do Sul</option>
+                                <option value="SC">Santa Catarina</option>
+                                <option value="MG">Minas Gerais</option>
+                                <option value="BA">Bahia</option>
+                                <option value="PE">Pernambuco</option>
+                                <option value="CE">Ceará</option>
+                                <option value="PA">Pará</option>
+                                <option value="AM">Amazonas</option>
+                                <option value="AC">Acre</option>
+                                <option value="RO">Rondônia</option>
+                                <option value="RR">Roraima</option>
+                                <option value="AP">Amapá</option>
+                                <option value="TO">Tocantins</option>
+                                <option value="MA">Maranhão</option>
+                                <option value="PI">Piauí</option>
+                                <option value="RN">Rio Grande do Norte</option>
+                                <option value="PB">Paraíba</option>
+                                <option value="SE">Sergipe</option>
+                                <option value="AL">Alagoas</option>
+                                <option value="ES">Espírito Santo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="cep" class="block text-sm font-medium text-gray-700 mb-1">
+                                CEP
+                            </label>
+                            <input type="text" 
+                                   id="cep" 
+                                   name="cep" 
+                                   placeholder="Ex: 78890-000"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label for="pais" class="block text-sm font-medium text-gray-700 mb-1">
+                                País
+                            </label>
+                            <input type="text" 
+                                   id="pais" 
+                                   name="pais" 
+                                   value="BRASIL"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex justify-end space-x-4 mt-6 pt-6 border-t">
+                <button type="button" 
+                        onclick="resetForm()"
+                        class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                    Limpar
+                </button>
+                <button type="submit" 
+                        class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                        id="submit-btn">
+                    <span id="btn-text">Cadastrar Cliente</span>
+                    <span id="loading-indicator" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Cadastrando...
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Resposta do Formulário -->
+        <div id="form-response" class="mt-4">
+            <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium" id="success-text">Cliente cadastrado com sucesso!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium" id="error-text">Erro ao cadastrar cliente!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% block scripts %}
+<script>
+function resetForm() {
+    document.getElementById('cliente-form').reset();
+    clearMessages();
+    
+    // Reset país para BRASIL
+    document.getElementById('pais').value = 'BRASIL';
+}
+
+function clearMessages() {
+    document.getElementById('success-message').classList.add('hidden');
+    document.getElementById('error-message').classList.add('hidden');
+}
+
+function showSuccess(message) {
+    clearMessages();
+    document.getElementById('success-text').textContent = message;
+    document.getElementById('success-message').classList.remove('hidden');
+}
+
+function showError(message) {
+    clearMessages();
+    document.getElementById('error-text').textContent = message;
+    document.getElementById('error-message').classList.remove('hidden');
+}
+
+function showLoading() {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Mostra estado de carregamento
+    btnText.classList.add('hidden');
+    loadingIndicator.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    // Limpa mensagens anteriores
+    clearMessages();
+}
+
+function handleFormResponse(event) {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Remove estado de carregamento
+    btnText.classList.remove('hidden');
+    loadingIndicator.classList.add('hidden');
+    submitBtn.disabled = false;
+    
+    console.log('Resposta recebida:', event.detail.xhr.responseText);
+    
+    try {
+        const response = JSON.parse(event.detail.xhr.responseText);
+        console.log('Response parsed:', response);
+        
+        if (response.success) {
+            showSuccess(response.message);
+            // Limpa o formulário após sucesso
+            setTimeout(() => {
+                document.getElementById('cliente-form').reset();
+                document.getElementById('pais').value = 'BRASIL';
+                clearMessages();
+            }, 2000);
+        } else {
+            showError(response.message || 'Erro desconhecido');
+        }
+    } catch (error) {
+        console.error('Erro ao processar resposta:', error);
+        showError('Erro de comunicação com o servidor');
+    }
+}
+
+function handleFormError(event) {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Remove estado de carregamento
+    btnText.classList.remove('hidden');
+    loadingIndicator.classList.add('hidden');
+    submitBtn.disabled = false;
+    
+    console.error('Erro na requisição:', event.detail.xhr);
+    showError('Erro ao enviar formulário');
+}
+
+// Auto-load ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    // Define país padrão como BRASIL
+    document.getElementById('pais').value = 'BRASIL';
+});
+</script>
+{% endblock %}
+{% endblock %}
