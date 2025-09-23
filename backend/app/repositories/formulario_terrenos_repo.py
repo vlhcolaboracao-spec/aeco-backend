@@ -32,11 +32,10 @@ class FormularioTerrenosRepository:
         try:
             collection = await self.get_collection()
             
-            # Gera código único do projeto se não fornecido
-            if not terreno_data.cod_projeto:
-                from ..utils.codigo_projeto import gerar_codigo_projeto_unico
-                terreno_data.cod_projeto = await gerar_codigo_projeto_unico()
-                logger.info(f"Código de projeto gerado automaticamente: {terreno_data.cod_projeto}")
+            # Gera código único do projeto automaticamente
+            from ..utils.codigo_projeto import gerar_codigo_projeto_unico
+            terreno_data.cod_projeto = await gerar_codigo_projeto_unico()
+            logger.info(f"Código de projeto gerado automaticamente: {terreno_data.cod_projeto}")
             
             # Converte para dict e adiciona timestamps
             terreno_dict = terreno_data.dict()
