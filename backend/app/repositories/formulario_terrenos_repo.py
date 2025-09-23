@@ -32,6 +32,12 @@ class FormularioTerrenosRepository:
         try:
             collection = await self.get_collection()
             
+            # Gera código único do projeto se não fornecido
+            if not terreno_data.cod_projeto:
+                from ..utils.codigo_projeto import gerar_codigo_projeto_unico
+                terreno_data.cod_projeto = await gerar_codigo_projeto_unico()
+                logger.info(f"Código de projeto gerado automaticamente: {terreno_data.cod_projeto}")
+            
             # Converte para dict e adiciona timestamps
             terreno_dict = terreno_data.dict()
             from datetime import datetime
@@ -107,6 +113,24 @@ class FormularioTerrenosRepository:
             
         except Exception as e:
             logger.error(f"Erro ao buscar terreno {terreno_id}: {e}")
+            raise
+    
+    async def get_terreno_by_cod_projeto(self, cod_projeto: str) -> Optional[FormularioTerrenosProjetosInDB]:
+        """Busca terreno por código do projeto"""
+        try:
+            collection = await self.get_collection()
+            
+            # Normaliza o código (remove formatação se houver)
+            codigo_normalizado = cod_projeto.replace('-', '').upper()
+            
+            terreno = await collection.find_one({"cod_projeto": codigo_normalizado})
+            
+            if terreno:
+                return FormularioTerrenosProjetosInDB(**terreno)
+            return None
+            
+        except Exception as e:
+            logger.error(f"Erro ao buscar terreno por código {cod_projeto}: {e}")
             raise
     
     async def get_all_terrenos(self, skip: int = 0, limit: int = 100) -> List[FormularioTerrenosProjetosInDB]:

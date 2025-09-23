@@ -27,6 +27,9 @@ class PyObjectId(ObjectId):
 class FormularioTerrenosProjetosBase(BaseModel):
     """Modelo base para Formulário de Terrenos de Projetos"""
     
+    # Identificação do Projeto
+    cod_projeto: str = Field(..., min_length=7, max_length=7, description="Código único do projeto (7 caracteres)")
+    
     # Identificação do Imóvel
     matricula: str = Field(..., min_length=1, max_length=50, description="Matrícula do imóvel")
     data: datetime = Field(..., description="Data do cadastro")
@@ -177,6 +180,16 @@ class FormularioTerrenosProjetosBase(BaseModel):
         
         return v
 
+    @field_validator('cod_projeto')
+    @classmethod
+    def validate_cod_projeto(cls, v):
+        """Valida código do projeto"""
+        if len(v) != 7:
+            raise ValueError('Código do projeto deve ter exatamente 7 caracteres')
+        if not v.isalnum():
+            raise ValueError('Código do projeto deve conter apenas letras e números')
+        return v.upper()
+
     @field_validator('zona')
     @classmethod
     def validate_zona(cls, v):
@@ -213,6 +226,7 @@ class FormularioTerrenosProjetosCreate(FormularioTerrenosProjetosBase):
 
 class FormularioTerrenosProjetosUpdate(BaseModel):
     """Modelo para atualização de terreno"""
+    cod_projeto: Optional[str] = Field(None, min_length=7, max_length=7)
     matricula: Optional[str] = Field(None, min_length=1, max_length=50)
     data: Optional[datetime] = None
     municipio: Optional[str] = Field(None, min_length=1, max_length=100)

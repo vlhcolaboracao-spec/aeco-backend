@@ -2,8 +2,10 @@
 Router para operações CRUD de Parâmetros Urbanísticos.
 """
 from typing import List
-from fastapi import APIRouter, HTTPException, Query, Path
+from fastapi import APIRouter, HTTPException, Query, Path, Response
+from fastapi.responses import JSONResponse
 import logging
+from datetime import datetime, timedelta
 
 from ..models.parametros_urbanisticos import (
     ParametrosUrbanisticos, 
@@ -304,4 +306,201 @@ async def calcular_parametros_temporarios(dados_calculo: DadosCalculoParametros)
         raise HTTPException(
             status_code=500,
             detail=f"Erro interno ao calcular parâmetros: {str(e)}"
+        )
+
+
+# === NOVOS ENDPOINTS PARA DYNAMO/REVIT ===
+
+@router.get("/api/parametros/projeto/{cod_projeto}", response_model=dict)
+async def get_parametros_completos_projeto(
+    cod_projeto: str = Path(..., description="Código do projeto (7 caracteres)"),
+    response: Response = None
+):
+    """
+    Busca TODOS os parâmetros urbanísticos de um projeto por código.
+    Endpoint otimizado para Dynamo/Revit - uma única requisição retorna tudo.
+    """
+    try:
+        # Busca terreno por código do projeto
+        from ..repositories.formulario_terrenos_repo import formulario_terrenos_repo
+        terreno = await formulario_terrenos_repo.get_terreno_by_cod_projeto(cod_projeto)
+        
+        if not terreno:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Projeto com código {cod_projeto} não encontrado"
+            )
+        
+        # Busca parâmetros urbanísticos
+        parametros = await parametros_urbanisticos_repo.get_parametros_by_terreno_id(str(terreno.id))
+        
+        if not parametros:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Parâmetros urbanísticos não encontrados para o projeto {cod_projeto}"
+            )
+        
+        # Prepara resposta otimizada para Dynamo/Revit
+        response_data = {
+            "success": True,
+            "projeto_codigo": terreno.cod_projeto,
+            "terreno_id": str(terreno.id),
+            "municipio": terreno.municipio,
+            "zona": terreno.zona,
+            "tipologia": terreno.tipologia,
+            "parametros": {},
+            "legislacao": parametros.legislacao,
+            "data_calculo": parametros.data_calculo.isoformat(),
+            "timestamp": parametros.updated_at.isoformat()
+        }
+        
+        # Extrai valores dos parâmetros calculados
+        if parametros.recuo_frontal:
+            response_data["parametros"]["recuo_frontal"] = {
+                "valor": parametros.recuo_frontal.valor,
+                "unidade": parametros.recuo_frontal.unidade,
+                "regra_aplicada": parametros.recuo_frontal.regra_aplicada,
+                "erro": parametros.recuo_frontal.erro
+            }
+        
+        if parametros.recuo_lateral:
+            response_data["parametros"]["recuo_lateral"] = {
+                "valor": parametros.recuo_lateral.valor,
+                "unidade": parametros.recuo_lateral.unidade,
+                "regra_aplicada": parametros.recuo_lateral.regra_aplicada,
+                "erro": parametros.recuo_lateral.erro
+            }
+        
+        if parametros.recuo_fundos:
+            response_data["parametros"]["recuo_fundos"] = {
+                "valor": parametros.recuo_fundos.valor,
+                "unidade": parametros.recuo_fundos.unidade,
+                "regra_aplicada": parametros.recuo_fundos.regra_aplicada,
+                "erro": parametros.recuo_fundos.erro
+            }
+        
+        if parametros.testada_minima:
+            response_data["parametros"]["testada_minima"] = {
+                "valor": parametros.testada_minima.valor,
+                "unidade": parametros.testada_minima.unidade,
+                "regra_aplicada": parametros.testada_minima.regra_aplicada,
+                "erro": parametros.testada_minima.erro
+            }
+        
+        if parametros.altura_maxima:
+            response_data["parametros"]["altura_maxima"] = {
+                "valor": parametros.altura_maxima.valor,
+                "unidade": parametros.altura_maxima.unidade,
+                "regra_aplicada": parametros.altura_maxima.regra_aplicada,
+                "erro": parametros.altura_maxima.erro
+            }
+        
+        if parametros.outorga_onerosa:
+            response_data["parametros"]["outorga_onerosa"] = {
+                "valor": parametros.outorga_onerosa.valor,
+                "unidade": parametros.outorga_onerosa.unidade,
+                "regra_aplicada": parametros.outorga_onerosa.regra_aplicada,
+                "erro": parametros.outorga_onerosa.erro
+            }
+        
+        # Adiciona headers de cache
+        if response:
+            response.headers["Cache-Control"] = "public, max-age=1800"  # 30 minutos
+            response.headers["ETag"] = f'"{parametros.id}"'
+            response.headers["Last-Modified"] = parametros.updated_at.strftime("%a, %d %b %Y %H:%M:%S GMT")
+        
+        return response_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao buscar parâmetros completos para projeto {cod_projeto}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno ao buscar parâmetros: {str(e)}"
+        )
+
+
+@router.get("/api/parametros/projeto/{cod_projeto}/{parametro}", response_model=dict)
+async def get_parametro_especifico_projeto(
+    cod_projeto: str = Path(..., description="Código do projeto (7 caracteres)"),
+    parametro: str = Path(..., description="Nome do parâmetro específico"),
+    response: Response = None
+):
+    """
+    Busca um parâmetro específico de um projeto por código.
+    Endpoint otimizado para Dynamo/Revit - requisição granular.
+    """
+    try:
+        # Valida se o parâmetro é válido
+        parametros_validos = [
+            "recuo_frontal", "recuo_lateral", "recuo_fundos", 
+            "testada_minima", "altura_maxima", "outorga_onerosa"
+        ]
+        
+        if parametro not in parametros_validos:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Parâmetro '{parametro}' inválido. Parâmetros válidos: {', '.join(parametros_validos)}"
+            )
+        
+        # Busca terreno por código do projeto
+        from ..repositories.formulario_terrenos_repo import formulario_terrenos_repo
+        terreno = await formulario_terrenos_repo.get_terreno_by_cod_projeto(cod_projeto)
+        
+        if not terreno:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Projeto com código {cod_projeto} não encontrado"
+            )
+        
+        # Busca parâmetros urbanísticos
+        parametros_obj = await parametros_urbanisticos_repo.get_parametros_by_terreno_id(str(terreno.id))
+        
+        if not parametros_obj:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Parâmetros urbanísticos não encontrados para o projeto {cod_projeto}"
+            )
+        
+        # Busca o parâmetro específico
+        parametro_obj = getattr(parametros_obj, parametro, None)
+        
+        if not parametro_obj:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Parâmetro '{parametro}' não encontrado para o projeto {cod_projeto}"
+            )
+        
+        # Prepara resposta otimizada
+        response_data = {
+            "success": True,
+            "projeto_codigo": terreno.cod_projeto,
+            "terreno_id": str(terreno.id),
+            "parametro": parametro,
+            "valor": parametro_obj.valor,
+            "unidade": parametro_obj.unidade,
+            "regra_aplicada": parametro_obj.regra_aplicada,
+            "dependencias": parametro_obj.dependencias,
+            "erro": parametro_obj.erro,
+            "legislacao": parametros_obj.legislacao,
+            "data_calculo": parametros_obj.data_calculo.isoformat(),
+            "timestamp": parametros_obj.updated_at.isoformat()
+        }
+        
+        # Adiciona headers de cache
+        if response:
+            response.headers["Cache-Control"] = "public, max-age=1800"  # 30 minutos
+            response.headers["ETag"] = f'"{parametros_obj.id}-{parametro}"'
+            response.headers["Last-Modified"] = parametros_obj.updated_at.strftime("%a, %d %b %Y %H:%M:%S GMT")
+        
+        return response_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao buscar parâmetro {parametro} para projeto {cod_projeto}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno ao buscar parâmetro: {str(e)}"
         )
