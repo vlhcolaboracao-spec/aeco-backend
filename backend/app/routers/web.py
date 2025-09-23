@@ -246,6 +246,7 @@ async def criar_terreno_web(request: Request):
         cep = form_data.get("cep")
         lados_poligono = int(form_data.get("lados_poligono"))
         tipo_lote = form_data.get("tipo_lote")
+        tipologia = form_data.get("tipologia")
         area = form_data.get("area")
         norte_verdadeiro = float(form_data.get("norte_verdadeiro"))
         zona = form_data.get("zona")
@@ -318,6 +319,7 @@ async def criar_terreno_web(request: Request):
             angulos_internos=angulos_internos,
             dimensoes_lados=dimensoes_lados,
             tipo_lote=tipo_lote,
+            tipologia=tipologia,
             area=area,
             norte_verdadeiro=norte_verdadeiro,
             zona=zona,
