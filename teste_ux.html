@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste UX - Preservação de Dados</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px; }
+        .required { border-left: 3px solid #3b82f6; }
+        .error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+        .error-message { color: #ef4444; font-size: 12px; margin-top: 2px; }
+        .log { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Preservação de Dados</h1>
+    
+    <form id="test-form">
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite seu nome">
+        </div>
+        
+        <div class="form-group">
+            <label for="zona">Zona:</label>
+            <select id="zona" name="zona" onchange="handleZonaChange(this.value)">
+                <option value="">Selecione uma zona</option>
+                <option value="ZCT1">ZCT1 - Zona de Transição</option>
+                <option value="ZCT2">ZCT2 - Zona de Transição</option>
+                <option value="ZAD1">ZAD1 - Zona de Adensamento</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="endereco">Endereço:</label>
+            <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço">
+        </div>
+        
+        <div class="form-group">
+            <label for="area">Área:</label>
+            <input type="number" id="area" name="area" placeholder="Digite a área">
+        </div>
+    </form>
+    
+    <div class="log" id="log"></div>
+    
+    <script>
+        // Armazena dados do formulário
+        let formData = {};
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function saveFormData() {
+            const form = document.getElementById('test-form');
+            const formDataObj = new FormData(form);
+            
+            formData = {};
+            for (let [key, value] of formDataObj.entries()) {
+                formData[key] = value;
+            }
+            
+            log('Dados salvos: ' + JSON.stringify(formData));
+        }
+        
+        function restoreFormData() {
+            log('Restaurando dados: ' + JSON.stringify(formData));
+            
+            for (let [key, value] of Object.entries(formData)) {
+                const element = document.querySelector(`[name="${key}"]`);
+                if (element && element.type !== 'file') {
+                    if (element.value && element.value.trim() !== '') {
+                        log(`Campo ${key} já tem valor: ${element.value}`);
+                        continue;
+                    }
+                    
+                    if (value && value.trim() !== '') {
+                        element.value = value;
+                        log(`Campo ${key} restaurado com valor: ${value}`);
+                    }
+                }
+            }
+        }
+        
+        function handleZonaChange(zona) {
+            if (!zona) {
+                log('Zona desmarcada');
+                return;
+            }
+            
+            log('Mudança de zona para: ' + zona);
+            
+            // Salva dados atuais ANTES de fazer qualquer coisa
+            saveFormData();
+            
+            // Simula validação (como se fosse uma requisição)
+            setTimeout(() => {
+                log('Validação concluída para zona: ' + zona);
+                
+                // Adiciona indicadores visuais
+                if (zona === 'ZCT1') {
+                    addRequiredIndicator('endereco');
+                } else if (zona === 'ZCT2') {
+                    addRequiredIndicator('area');
+                }
+                
+                // Restaura dados APÓS validação
+                restoreFormData();
+            }, 500);
+        }
+        
+        function addRequiredIndicator(fieldName) {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (!field) return;
+            
+            const label = document.querySelector(`label[for="${fieldName}"]`);
+            if (!label) return;
+            
+            // Adiciona asterisco se não existir
+            if (!label.innerHTML.includes('*')) {
+                label.innerHTML = label.innerHTML.replace('</label>', ' *</label>');
+            }
+            
+            // Adiciona classe para campo obrigatório
+            field.classList.add('required');
+            field.setAttribute('data-required', 'true');
+            
+            log(`Campo ${fieldName} marcado como obrigatório`);
+        }
+        
+        // Salva dados quando o usuário digita
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('test-form');
+            if (form) {
+                form.addEventListener('input', function(e) {
+                    if (e.target.name) {
+                        saveFormData();
+                    }
+                });
+                
+                form.addEventListener('change', function(e) {
+                    if (e.target.name) {
+                        saveFormData();
+                    }
+                });
+            }
+            
+            log('Sistema de preservação de dados inicializado');
+        });
+    </script>
+</body>
+</html>

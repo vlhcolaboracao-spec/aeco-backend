@@ -168,9 +168,7 @@
                                 name="zona" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
-                                hx-get="/projetos/validacao/zona/{value}"
-                                hx-trigger="change"
-                                hx-target="#zona-validation">
+                                onchange="handleZonaChange(this.value)">
                             <option value="">Selecione a zona</option>
                             <option value="ZAD1">ZAD1 - Zona de Adensamento</option>
                             <option value="ZAD2">ZAD2 - Zona de Adensamento</option>
@@ -192,6 +190,9 @@
                             <option value="ZII">ZII - Zona Industrial</option>
                         </select>
                         <div id="zona-validation" class="mt-2"></div>
+                        <div id="debug-info" class="mt-2 text-xs text-gray-500" style="display: none;">
+                            <div>Debug: <span id="debug-text"></span></div>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-3 gap-4">
@@ -577,6 +578,394 @@ document.addEventListener('DOMContentLoaded', function() {
     updateAngulosInternos();
     updateDimensoesLados();
 });
+
+// ===== FUNCIONALIDADES DE VALIDAÇÃO DINÂMICA POR ZONA =====
+
+// Armazena dados do formulário para preservação
+let formData = {};
+
+// Função para salvar dados do formulário
+function saveFormData() {
+    const form = document.getElementById('terreno-form');
+    const formDataObj = new FormData(form);
+    
+    // Salva todos os dados do formulário
+    for (let [key, value] of formDataObj.entries()) {
+        formData[key] = value;
+    }
+}
+
+// Função para restaurar dados do formulário
+function restoreFormData() {
+    console.log('=== INICIANDO RESTAURAÇÃO DE DADOS ===');
+    console.log('Dados a restaurar:', formData);
+    
+    let restoredCount = 0;
+    
+    for (let [key, value] of Object.entries(formData)) {
+        const element = document.querySelector(`[name="${key}"]`);
+        if (element && element.type !== 'file') {
+            console.log(`Processando campo ${key}: valor atual="${element.value}", valor salvo="${value}"`);
+            
+            // Se o campo está vazio, restaura o valor salvo
+            if (!element.value || element.value.trim() === '') {
+                if (value && value.trim() !== '') {
+                    element.value = value;
+                    console.log(`✅ Campo ${key} restaurado com valor: ${value}`);
+                    restoredCount++;
+                } else {
+                    console.log(`⚠️ Campo ${key} não tem valor para restaurar`);
+                }
+            } else {
+                console.log(`ℹ️ Campo ${key} já tem valor, mantendo: ${element.value}`);
+            }
+        } else {
+            console.log(`⚠️ Campo ${key} não encontrado ou é arquivo`);
+        }
+    }
+    
+    console.log(`=== RESTAURAÇÃO CONCLUÍDA: ${restoredCount} campos restaurados ===`);
+}
+
+// Função principal para lidar com mudança de zona
+function handleZonaChange(zona) {
+    console.log('=== MUDANÇA DE ZONA INICIADA ===');
+    console.log('Zona selecionada:', zona);
+    showDebug(`Mudança de zona para: ${zona}`);
+    
+    if (!zona) {
+        console.log('Nenhuma zona selecionada, limpando validações');
+        showDebug('Zona desmarcada, limpando validações');
+        clearFieldValidation();
+        return;
+    }
+    
+    // Salva dados atuais ANTES de fazer qualquer coisa
+    console.log('Salvando dados atuais...');
+    saveFormData();
+    console.log('Dados salvos:', formData);
+    showDebug(`Dados salvos: ${Object.keys(formData).length} campos`);
+    
+    // Busca validações para a zona
+    console.log('Buscando validações para zona:', zona);
+    showDebug(`Buscando validações para zona: ${zona}`);
+    
+    fetch(`/projetos/validacao/zona/${zona}`)
+        .then(response => {
+            console.log('Resposta recebida:', response.status);
+            showDebug(`Resposta recebida: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Dados de validação:', data);
+            showDebug(`Validações recebidas: ${data.campos_obrigatorios ? data.campos_obrigatorios.length : 0} campos obrigatórios`);
+            
+            if (data.success) {
+                console.log('Aplicando validações...');
+                updateFieldValidation(data);
+                
+                // Restaura dados APÓS validação com delay maior
+                console.log('Restaurando dados em 200ms...');
+                showDebug('Aplicando validações e restaurando dados...');
+                setTimeout(() => {
+                    console.log('Executando restauração de dados...');
+                    restoreFormData();
+                    console.log('=== DADOS RESTAURADOS ===');
+                    showDebug('Dados restaurados com sucesso!');
+                }, 200);
+            } else {
+                console.log('Erro na validação, restaurando dados mesmo assim');
+                showDebug('Erro na validação, restaurando dados...');
+                restoreFormData();
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao validar zona:', error);
+            console.log('Restaurando dados mesmo com erro');
+            showDebug('Erro na requisição, restaurando dados...');
+            restoreFormData();
+        });
+}
+
+// Função para atualizar validação dos campos
+function updateFieldValidation(validationData) {
+    // Remove indicadores anteriores
+    clearFieldValidation();
+    
+    // Adiciona indicadores para campos obrigatórios
+    if (validationData.campos_obrigatorios) {
+        validationData.campos_obrigatorios.forEach(campo => {
+            addRequiredIndicator(campo);
+        });
+    }
+    
+    // Adiciona indicadores para campos condicionais
+    if (validationData.campos_condicionais) {
+        validationData.campos_condicionais.forEach(campo => {
+            addRequiredIndicator(campo);
+        });
+    }
+    
+    // Mostra/oculta campos baseado na zona
+    if (validationData.campos_visiveis) {
+        validationData.campos_visiveis.forEach(campo => {
+            showField(campo);
+        });
+    }
+    
+    if (validationData.campos_ocultos) {
+        validationData.campos_ocultos.forEach(campo => {
+            hideField(campo);
+        });
+    }
+}
+
+// Função para adicionar indicador de campo obrigatório
+function addRequiredIndicator(fieldName) {
+    const field = document.querySelector(`[name="${fieldName}"]`);
+    if (!field) return;
+    
+    const label = document.querySelector(`label[for="${fieldName}"]`);
+    if (!label) return;
+    
+    // Adiciona asterisco se não existir
+    if (!label.innerHTML.includes('*')) {
+        label.innerHTML = label.innerHTML.replace('</label>', ' *</label>');
+    }
+    
+    // Adiciona classe para campo obrigatório
+    field.classList.add('required-field');
+    field.setAttribute('data-required', 'true');
+}
+
+// Função para remover indicadores de validação
+function clearFieldValidation() {
+    // Remove asteriscos dos labels
+    document.querySelectorAll('label').forEach(label => {
+        if (label.innerHTML.includes(' *')) {
+            label.innerHTML = label.innerHTML.replace(' *', '');
+        }
+    });
+    
+    // Remove classes de validação
+    document.querySelectorAll('.required-field').forEach(field => {
+        field.classList.remove('required-field', 'field-error');
+        field.removeAttribute('data-required');
+    });
+}
+
+// Função para mostrar campo
+function showField(fieldName) {
+    const field = document.querySelector(`[name="${fieldName}"]`);
+    if (field) {
+        const fieldContainer = field.closest('div');
+        if (fieldContainer) {
+            fieldContainer.style.display = 'block';
+        }
+    }
+}
+
+// Função para ocultar campo
+function hideField(fieldName) {
+    const field = document.querySelector(`[name="${fieldName}"]`);
+    if (field) {
+        const fieldContainer = field.closest('div');
+        if (fieldContainer) {
+            fieldContainer.style.display = 'none';
+        }
+    }
+}
+
+// Função para validar formulário antes do envio
+function validateForm() {
+    let isValid = true;
+    const errors = [];
+    
+    // Remove erros anteriores
+    clearFieldErrors();
+    
+    // Valida campos obrigatórios
+    document.querySelectorAll('[data-required="true"]').forEach(field => {
+        if (!field.value || field.value.trim() === '') {
+            addFieldError(field, 'Este campo é obrigatório');
+            isValid = false;
+        }
+    });
+    
+    // Validações específicas por tipo de campo
+    validateSpecificFields();
+    
+    return isValid;
+}
+
+// Função para adicionar erro visual ao campo
+function addFieldError(field, message) {
+    field.classList.add('field-error');
+    
+    // Adiciona mensagem de erro
+    let errorElement = field.parentNode.querySelector('.field-error-message');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'field-error-message text-red-600 text-sm mt-1';
+        field.parentNode.appendChild(errorElement);
+    }
+    errorElement.textContent = message;
+}
+
+// Função para remover erros dos campos
+function clearFieldErrors() {
+    document.querySelectorAll('.field-error').forEach(field => {
+        field.classList.remove('field-error');
+    });
+    
+    document.querySelectorAll('.field-error-message').forEach(error => {
+        error.remove();
+    });
+}
+
+// Função para validações específicas
+function validateSpecificFields() {
+    // Validação de matrícula
+    const matricula = document.querySelector('[name="matricula"]');
+    if (matricula && matricula.value) {
+        if (!/^[0-9-\.]+$/.test(matricula.value)) {
+            addFieldError(matricula, 'Matrícula deve conter apenas números, hífens e pontos');
+        }
+    }
+    
+    // Validação de CEP
+    const cep = document.querySelector('[name="cep"]');
+    if (cep && cep.value) {
+        if (!/^\d{5}-?\d{3}$/.test(cep.value)) {
+            addFieldError(cep, 'CEP deve estar no formato 00000-000');
+        }
+    }
+    
+    // Validação de área
+    const area = document.querySelector('[name="area"]');
+    if (area && area.value) {
+        const areaValue = parseFloat(area.value);
+        if (isNaN(areaValue) || areaValue <= 0) {
+            addFieldError(area, 'Área deve ser um número positivo');
+        }
+    }
+}
+
+// Intercepta envio do formulário para validação
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('terreno-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Mostra mensagem de erro geral
+                showGeneralError('Por favor, corrija os erros destacados em vermelho antes de continuar.');
+            }
+        });
+    }
+});
+
+// Função para mostrar erro geral
+function showGeneralError(message) {
+    let errorContainer = document.getElementById('general-error');
+    if (!errorContainer) {
+        errorContainer = document.createElement('div');
+        errorContainer.id = 'general-error';
+        errorContainer.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+        const form = document.getElementById('terreno-form');
+        form.insertBefore(errorContainer, form.firstChild);
+    }
+    errorContainer.innerHTML = `
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            ${message}
+        </div>
+    `;
+    
+    // Remove erro após 5 segundos
+    setTimeout(() => {
+        if (errorContainer) {
+            errorContainer.remove();
+        }
+    }, 5000);
+}
+
+// Salva dados do formulário periodicamente
+setInterval(saveFormData, 2000);
+
+// Função de debug para mostrar informações na tela
+function showDebug(message) {
+    const debugDiv = document.getElementById('debug-info');
+    const debugText = document.getElementById('debug-text');
+    if (debugDiv && debugText) {
+        debugDiv.style.display = 'block';
+        debugText.textContent = message;
+        console.log('DEBUG:', message);
+    }
+}
+
+// Salva dados quando o usuário digita
+document.addEventListener('DOMContentLoaded', function() {
+    // Adiciona listeners para salvar dados em tempo real
+    const form = document.getElementById('terreno-form');
+    if (form) {
+        form.addEventListener('input', function(e) {
+            if (e.target.name) {
+                saveFormData();
+                showDebug(`Dados salvos automaticamente (${Object.keys(formData).length} campos)`);
+            }
+        });
+        
+        form.addEventListener('change', function(e) {
+            if (e.target.name) {
+                saveFormData();
+                showDebug(`Dados salvos por mudança (${Object.keys(formData).length} campos)`);
+            }
+        });
+    }
+    
+    showDebug('Sistema de preservação de dados inicializado');
+});
 </script>
+
+<style>
+/* Estilos para validação visual */
+.field-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.required-field {
+    border-left: 3px solid #3b82f6;
+}
+
+.field-error-message {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Destaque para campos obrigatórios */
+label:has(+ input[data-required="true"]),
+label:has(+ select[data-required="true"]) {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+label:has(+ input[data-required="true"])::after,
+label:has(+ select[data-required="true"])::after {
+    content: " *";
+    color: #ef4444;
+    font-weight: bold;
+}
+</style>
+
 {% endblock %}
 {% endblock %}
