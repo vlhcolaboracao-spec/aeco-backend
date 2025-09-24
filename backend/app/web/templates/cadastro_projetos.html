@@ -53,10 +53,7 @@
                     <select id="natureza" 
                             name="natureza" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                            hx-get="/projetos/validacao/natureza/{value}"
-                            hx-trigger="change"
-                            hx-target="#natureza-validation">
+                            required>
                         <option value="">Selecione</option>
                         <option value="Desmembramento">Desmembramento</option>
                         <option value="Loteamento e Condomínio">Loteamento e Condomínio</option>
@@ -64,7 +61,6 @@
                         <option value="Urbanistico">Urbanistico</option>
                         <option value="Não se aplica">Não se aplica</option>
                     </select>
-                    <div id="natureza-validation" class="mt-2"></div>
                 </div>
 
                 <div class="mt-4">
@@ -79,9 +75,56 @@
                 </div>
             </div>
 
-            <!-- Passo 2: Dados Técnicos -->
+            <!-- Passo 2: Associações (Obrigatórias) -->
             <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">2. Dados Técnicos</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">2. Associações</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Cliente Proprietário *
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="hidden" id="cliente_id" name="cliente_id" value="" required>
+                            <input type="text" 
+                                   id="cliente_nome" 
+                                   placeholder="Selecione um cliente"
+                                   readonly
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                                   required>
+                            <button type="button" 
+                                    onclick="abrirModalClientes()"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                Consultar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Terreno do Projeto *
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="hidden" id="terreno_id" name="terreno_id" value="" required>
+                            <input type="text" 
+                                   id="terreno_info" 
+                                   placeholder="Selecione um terreno"
+                                   readonly
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                                   required>
+                            <button type="button" 
+                                    onclick="abrirModalTerrenos()"
+                                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                Consultar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 3: Dados Técnicos -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">3. Dados Técnicos</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -96,6 +139,9 @@
                                max="50"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                placeholder="Ex: 2">
+                        <div id="pavimentos-info" class="mt-1 text-xs text-blue-600" style="display: none;">
+                            <span id="pavimentos-limit-text"></span>
+                        </div>
                     </div>
 
                     <div>
@@ -141,51 +187,6 @@
                                min="0"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                placeholder="Ex: 360.00">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Passo 3: Associações (Opcionais) -->
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">3. Associações (Opcionais)</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Cliente Proprietário (Opcional)
-                        </label>
-                        <div class="flex gap-2">
-                            <input type="hidden" id="cliente_id" name="cliente_id" value="">
-                            <input type="text" 
-                                   id="cliente_nome" 
-                                   placeholder="Cliente selecionado aparecerá aqui"
-                                   readonly
-                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                            <button type="button" 
-                                    onclick="abrirModalClientes()"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                Consultar
-                            </button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Terreno do Projeto (Opcional)
-                        </label>
-                        <div class="flex gap-2">
-                            <input type="hidden" id="terreno_id" name="terreno_id" value="">
-                            <input type="text" 
-                                   id="terreno_info" 
-                                   placeholder="Terreno selecionado aparecerá aqui"
-                                   readonly
-                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                            <button type="button" 
-                                    onclick="abrirModalTerrenos()"
-                                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                                Consultar
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -253,6 +254,9 @@
 
         <!-- Área de resultado -->
         <div id="resultado" class="mt-6"></div>
+        
+        <!-- Mensagens de feedback -->
+        <div id="feedback-messages" class="mt-4"></div>
     </div>
 </div>
 
@@ -451,7 +455,7 @@ function renderizarListaTerrenos(terrenos) {
     }
     
     const html = terrenos.map(terreno => `
-        <div class="border rounded-lg p-4 mb-3 hover:bg-gray-50 cursor-pointer" onclick="selecionarTerreno('${terreno.id}', '${terreno.cod_projeto}', '${terreno.matricula}', '${terreno.endereco}')">
+        <div class="border rounded-lg p-4 mb-3 hover:bg-gray-50 cursor-pointer" onclick="selecionarTerreno('${terreno.id}', '${terreno.cod_projeto}', '${terreno.matricula}', '${terreno.endereco}', '${terreno.zona}')">
             <div class="flex justify-between items-start">
                 <div>
                     <h4 class="font-semibold text-gray-800">${terreno.cod_projeto} - ${terreno.matricula}</h4>
@@ -476,15 +480,163 @@ function selecionarCliente(id, nome) {
 }
 
 // Seleciona terreno
-function selecionarTerreno(id, codProjeto, matricula, endereco) {
+function selecionarTerreno(id, codProjeto, matricula, endereco, zona) {
     document.getElementById('terreno_id').value = id;
     document.getElementById('terreno_info').value = `${codProjeto} - ${matricula} - ${endereco}`;
     fecharModalTerrenos();
+    
+    // Consulta zona e atualiza placeholders
+    if (zona) {
+        consultarZonaEAtualizarPlaceholders(zona);
+    } else {
+        // Se não temos a zona, busca ela
+        buscarZonaDoTerreno(id);
+    }
+}
+
+// Busca zona do terreno por ID
+function buscarZonaDoTerreno(terrenoId) {
+    fetch(`/terrenos/${terrenoId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.terreno) {
+                consultarZonaEAtualizarPlaceholders(data.terreno.zona);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar zona do terreno:', error);
+        });
+}
+
+// Consulta zona e atualiza placeholders dos campos técnicos
+function consultarZonaEAtualizarPlaceholders(zona) {
+    console.log('Consultando zona:', zona);
+    
+    fetch(`/projetos/validacao/zona/${zona}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                atualizarPlaceholdersComLimites(data, zona);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao consultar zona:', error);
+        });
+}
+
+// Atualiza placeholders com limites da zona
+function atualizarPlaceholdersComLimites(validationData, zona) {
+    console.log('Atualizando placeholders para zona:', zona, validationData);
+    
+    // Atualiza campo pavimentos
+    const pavimentosField = document.getElementById('pavimentos');
+    const pavimentosInfo = document.getElementById('pavimentos-info');
+    const pavimentosLimitText = document.getElementById('pavimentos-limit-text');
+    
+    if (pavimentosField && pavimentosInfo && pavimentosLimitText) {
+        // Busca limite de pavimentos na zona (implementação específica)
+        const limitePavimentos = obterLimitePavimentosPorZona(zona);
+        
+        if (limitePavimentos) {
+            // Atualiza placeholder
+            pavimentosField.placeholder = `Ex: 2 (máx: ${limitePavimentos} para zona ${zona})`;
+            
+            // Atualiza atributo max
+            pavimentosField.max = limitePavimentos;
+            
+            // Mostra informação adicional
+            pavimentosLimitText.textContent = `Limite máximo: ${limitePavimentos} pavimentos para zona ${zona}`;
+            pavimentosInfo.style.display = 'block';
+            
+            console.log(`Limite de pavimentos atualizado: ${limitePavimentos} para zona ${zona}`);
+        } else {
+            // Remove informações específicas da zona
+            pavimentosField.placeholder = 'Ex: 2';
+            pavimentosField.max = 50;
+            pavimentosInfo.style.display = 'none';
+        }
+    }
+}
+
+// Obtém limite de pavimentos por zona (implementação específica da legislação)
+function obterLimitePavimentosPorZona(zona) {
+    const limitesPavimentos = {
+        'ZAD1': 4,
+        'ZAD2': 6,
+        'ZC1': 8,
+        'ZC2': 10,
+        'ZCT1': 3,
+        'ZCT2': 4,
+        'ZCT3': 5,
+        'ZCT4': 6,
+        'ZH1': 2,
+        'ZH2': 3,
+        'ZH3': 4,
+        'ZHL': 1,
+        'ZEIS': 2,  // CORRIGIDO: LC 108/2009 - máximo 2 pavimentos
+        'ZI1': 2,
+        'ZI2': 3,
+        'ZIA1': 2,
+        'ZIA2': 3,
+        'ZII': 2
+    };
+    
+    return limitesPavimentos[zona] || null;
+}
+
+// Funções para feedback visual
+function showSuccessMessage(message) {
+    const feedbackDiv = document.getElementById('feedback-messages');
+    feedbackDiv.innerHTML = `
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    // Remove mensagem após 5 segundos
+    setTimeout(() => {
+        feedbackDiv.innerHTML = '';
+    }, 5000);
+    
+    // Scroll para a mensagem
+    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function showErrorMessage(message) {
+    const feedbackDiv = document.getElementById('feedback-messages');
+    feedbackDiv.innerHTML = `
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    // Remove mensagem após 7 segundos (erro fica mais tempo)
+    setTimeout(() => {
+        feedbackDiv.innerHTML = '';
+    }, 7000);
+    
+    // Scroll para a mensagem
+    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearFeedbackMessages() {
+    const feedbackDiv = document.getElementById('feedback-messages');
+    feedbackDiv.innerHTML = '';
 }
 
 // Form validation
 document.getElementById('projetoForm').addEventListener('submit', function(e) {
-    const requiredFields = ['nome_projeto', 'tipo_empreendimento', 'natureza'];
+    const requiredFields = ['nome_projeto', 'tipo_empreendimento', 'natureza', 'cliente_id', 'terreno_id'];
     let isValid = true;
     
     requiredFields.forEach(fieldName => {
@@ -492,8 +644,22 @@ document.getElementById('projetoForm').addEventListener('submit', function(e) {
         if (!field.value.trim()) {
             field.classList.add('border-red-500');
             isValid = false;
+            
+            // Destaca visualmente campos obrigatórios não preenchidos
+            if (fieldName === 'cliente_id') {
+                document.getElementById('cliente_nome').classList.add('border-red-500');
+            } else if (fieldName === 'terreno_id') {
+                document.getElementById('terreno_info').classList.add('border-red-500');
+            }
         } else {
             field.classList.remove('border-red-500');
+            
+            // Remove destaque visual
+            if (fieldName === 'cliente_id') {
+                document.getElementById('cliente_nome').classList.remove('border-red-500');
+            } else if (fieldName === 'terreno_id') {
+                document.getElementById('terreno_info').classList.remove('border-red-500');
+            }
         }
     });
     
@@ -523,6 +689,23 @@ document.getElementById('projetoForm').addEventListener('submit', function(e) {
                 campo.classList.remove('border-red-500');
             }
         });
+        
+        // Validação específica do campo pavimentos baseada na zona
+        const terrenoId = document.getElementById('terreno_id').value;
+        const pavimentos = document.getElementById('pavimentos').value;
+        
+        if (terrenoId && pavimentos) {
+            const pavimentosField = document.getElementById('pavimentos');
+            const maxPavimentos = parseInt(pavimentosField.max);
+            
+            if (parseInt(pavimentos) > maxPavimentos) {
+                pavimentosField.classList.add('border-red-500');
+                isValid = false;
+                alert(`Número de pavimentos (${pavimentos}) excede o limite permitido para esta zona (${maxPavimentos}).`);
+            } else {
+                pavimentosField.classList.remove('border-red-500');
+            }
+        }
     }
     
     // Para projetos urbanísticos
@@ -538,8 +721,59 @@ document.getElementById('projetoForm').addEventListener('submit', function(e) {
     
     if (!isValid) {
         e.preventDefault();
-        alert('Por favor, preencha todos os campos obrigatórios.');
+        showErrorMessage('Por favor, preencha todos os campos obrigatórios.');
     }
+});
+
+// Event listeners para feedback HTMX
+document.addEventListener('htmx:beforeRequest', function(event) {
+    // Limpa mensagens anteriores antes de nova requisição
+    clearFeedbackMessages();
+});
+
+document.addEventListener('htmx:afterRequest', function(event) {
+    // Processa resposta após requisição HTMX
+    if (event.detail.xhr) {
+        const status = event.detail.xhr.status;
+        const responseText = event.detail.xhr.responseText;
+        
+        try {
+            const response = JSON.parse(responseText);
+            
+            if (status === 200 || status === 201) {
+                if (response.success) {
+                    showSuccessMessage(response.message || 'Projeto cadastrado com sucesso!');
+                    
+                    // Limpa formulário após sucesso
+                    setTimeout(() => {
+                        document.getElementById('projetoForm').reset();
+                        clearFeedbackMessages();
+                    }, 2000);
+                } else {
+                    showErrorMessage(response.message || 'Erro ao cadastrar projeto.');
+                }
+            } else {
+                showErrorMessage('Erro no servidor. Tente novamente.');
+            }
+        } catch (error) {
+            // Se não conseguir parsear JSON, verifica status HTTP
+            if (status === 200 || status === 201) {
+                showSuccessMessage('Projeto cadastrado com sucesso!');
+            } else {
+                showErrorMessage('Erro ao processar resposta do servidor.');
+            }
+        }
+    }
+});
+
+document.addEventListener('htmx:responseError', function(event) {
+    // Trata erros de rede/conexão
+    showErrorMessage('Erro de conexão. Verifique sua internet e tente novamente.');
+});
+
+document.addEventListener('htmx:sendError', function(event) {
+    // Trata erros de envio
+    showErrorMessage('Erro ao enviar dados. Tente novamente.');
 });
 </script>
 {% endblock %}
