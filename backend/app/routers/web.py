@@ -910,20 +910,38 @@ async def cadastrar_projeto(
         from fastapi.responses import HTMLResponse
         
         success_html = f"""
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
+        <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
             <div class="flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
                 <strong>Sucesso!</strong> Projeto cadastrado com sucesso!
             </div>
-            <div class="mt-2 text-sm">
-                <p><strong>Código:</strong> {projeto_criado.cod_projeto}</p>
-                <p><strong>Nome:</strong> {projeto_criado.nome_projeto}</p>
-                <p><strong>Tipo:</strong> {projeto_criado.tipo_empreendimento}</p>
-                <p><strong>ID:</strong> {str(projeto_criado.id)[:8]}...</p>
-            </div>
         </div>
+        <script>
+            // Limpa o formulário
+            document.getElementById('projetoForm').reset();
+            
+            // Remove valores dos campos hidden
+            document.getElementById('cliente_id').value = '';
+            document.getElementById('terreno_id').value = '';
+            document.getElementById('cliente_nome').value = '';
+            document.getElementById('terreno_info').value = '';
+            
+            // Remove mensagens de feedback existentes
+            const feedbackMessages = document.getElementById('feedback-messages');
+            if (feedbackMessages) {{
+                feedbackMessages.innerHTML = '';
+            }}
+            
+            // Remove a mensagem de sucesso após 3 segundos
+            setTimeout(function() {{
+                const successMsg = document.getElementById('success-message');
+                if (successMsg) {{
+                    successMsg.remove();
+                }}
+            }}, 3000);
+        </script>
         """
         
         return HTMLResponse(content=success_html)
