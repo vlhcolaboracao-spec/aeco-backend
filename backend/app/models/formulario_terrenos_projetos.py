@@ -218,6 +218,9 @@ class FormularioTerrenosProjetosBase(BaseModel):
     def convert_tipo_lote_to_title(cls, v):
         """Converte tipo de lote para formato título"""
         if isinstance(v, str):
+            # Preserva "Único na Quadra" sem alterar a capitalização
+            if v.lower() == "único na quadra":
+                return "Único na Quadra"
             return v.title()
         return v
 

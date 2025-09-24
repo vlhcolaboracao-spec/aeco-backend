@@ -28,7 +28,7 @@ class ProjetoBase(BaseModel):
     """Modelo base para Projetos"""
     
     # Identificação do Projeto
-    cod_projeto: str = Field(..., min_length=7, max_length=7, description="Código único do projeto (7 caracteres)")
+    cod_projeto: Optional[str] = Field(None, min_length=7, max_length=7, description="Código único do projeto (7 caracteres)")
     nome_projeto: str = Field(..., min_length=1, max_length=200, description="Nome do projeto")
     
     # Relacionamentos (opcionais)
@@ -59,6 +59,8 @@ class ProjetoBase(BaseModel):
     @classmethod
     def validate_cod_projeto(cls, v):
         """Valida código do projeto"""
+        if v is None:
+            return None  # Será gerado automaticamente pelo repositório
         if len(v) != 7:
             raise ValueError('Código do projeto deve ter exatamente 7 caracteres')
         if not v.isalnum():

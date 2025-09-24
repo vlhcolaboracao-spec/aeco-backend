@@ -37,6 +37,11 @@ class ProjetosRepository:
             from datetime import datetime
             projeto_dict["created_at"] = projeto_dict["updated_at"] = datetime.now()
             
+            # Gera código do projeto se não fornecido
+            if not projeto_dict.get("cod_projeto"):
+                from ..utils.codigo_projeto import gerar_codigo_projeto_unico
+                projeto_dict["cod_projeto"] = await gerar_codigo_projeto_unico()
+            
             result = await collection.insert_one(projeto_dict)
             
             # Busca o projeto criado

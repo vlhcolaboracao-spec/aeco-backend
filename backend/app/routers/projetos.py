@@ -427,8 +427,8 @@ async def consultar_clientes(
                 "nome": cliente.nome_completo_razao_social,
                 "cpf_cnpj": cliente.cpf_cnpj,
                 "tipo": "Pessoa Jurídica" if cliente.cpf_cnpj and len(cliente.cpf_cnpj) > 11 else "Pessoa Física",
-                "endereco": f"{cliente.endereco}, {cliente.cidade} - {cliente.estado}" if cliente.endereco else "",
-                "contato": cliente.telefone or cliente.email or ""
+                "endereco": f"{cliente.logradouro or ''}, {cliente.numero or ''}, {cliente.bairro or ''}, {cliente.cidade or ''} - {cliente.estado or ''}".strip(", "),
+                "contato": cliente.telefone_principal or cliente.email or ""
             })
         
         return {

@@ -347,7 +347,7 @@ async def get_parametros_completos_projeto(
             "terreno_id": str(terreno.id),
             "municipio": terreno.municipio,
             "zona": terreno.zona,
-            "tipologia": terreno.tipologia,
+            "tipo_lote": terreno.tipo_lote,
             "parametros": {},
             "legislacao": parametros.legislacao,
             "data_calculo": parametros.data_calculo.isoformat(),
