@@ -825,6 +825,52 @@ async def cadastrar_projeto(
         cod_projeto = await gerar_codigo_projeto_unico()
         logger.info(f"Código gerado: {cod_projeto}")
         
+        # Trata campos vazios e conversões
+        logger.info("Tratando campos vazios...")
+        
+        # Converte campos numéricos
+        pavimentos_int = None
+        if pavimentos is not None and pavimentos != "":
+            try:
+                pavimentos_int = int(pavimentos)
+            except (ValueError, TypeError):
+                pavimentos_int = None
+        
+        altura_float = None
+        if altura_total is not None and altura_total != "":
+            try:
+                altura_float = float(altura_total)
+            except (ValueError, TypeError):
+                altura_float = None
+        
+        area_construida_float = None
+        if area_construida is not None and area_construida != "":
+            try:
+                area_construida_float = float(area_construida)
+            except (ValueError, TypeError):
+                area_construida_float = None
+        
+        area_minima_float = None
+        if area_minima_lote is not None and area_minima_lote != "":
+            try:
+                area_minima_float = float(area_minima_lote)
+            except (ValueError, TypeError):
+                area_minima_float = None
+        
+        # Converte campos de texto para None se vazios
+        descricao_clean = descricao if descricao and descricao.strip() else None
+        avenida_clean = avenida if avenida and avenida.strip() else None
+        observacoes_clean = observacoes if observacoes and observacoes.strip() else None
+        cliente_id_clean = cliente_id if cliente_id and cliente_id.strip() else None
+        terreno_id_clean = terreno_id if terreno_id and terreno_id.strip() else None
+        
+        logger.info(f"Campos tratados:")
+        logger.info(f"  pavimentos: {pavimentos_int}")
+        logger.info(f"  altura_total: {altura_float}")
+        logger.info(f"  area_construida: {area_construida_float}")
+        logger.info(f"  cliente_id: {cliente_id_clean}")
+        logger.info(f"  terreno_id: {terreno_id_clean}")
+        
         # Cria o projeto
         logger.info("Criando objeto ProjetoCreate...")
         projeto_data = ProjetoCreate(
@@ -832,15 +878,15 @@ async def cadastrar_projeto(
             nome_projeto=nome_projeto,
             tipo_empreendimento=tipo_empreendimento,
             natureza=natureza,
-            descricao=descricao,
-            pavimentos=pavimentos,
-            altura_total=altura_total,
-            area_construida=area_construida,
-            area_minima_lote=area_minima_lote,
-            cliente_id=cliente_id if cliente_id else None,
-            terreno_id=terreno_id if terreno_id else None,
-            avenida=avenida,
-            observacoes=observacoes
+            descricao=descricao_clean,
+            pavimentos=pavimentos_int,
+            altura_total=altura_float,
+            area_construida=area_construida_float,
+            area_minima_lote=area_minima_float,
+            cliente_id=cliente_id_clean,
+            terreno_id=terreno_id_clean,
+            avenida=avenida_clean,
+            observacoes=observacoes_clean
         )
         logger.info("Objeto ProjetoCreate criado com sucesso!")
         
