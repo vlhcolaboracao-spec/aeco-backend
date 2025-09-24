@@ -158,6 +158,42 @@
                 <div class="space-y-4">
                     <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Características do Terreno</h3>
                     
+                    <!-- ZONA (Primeiro campo - prioritário) -->
+                    <div>
+                        <label for="zona" class="block text-sm font-medium text-gray-700 mb-1">
+                            Zona Urbana *
+                            <span class="text-blue-500 text-sm">⭐ Campo prioritário - determina validações</span>
+                        </label>
+                        <select id="zona" 
+                                name="zona" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                                hx-get="/projetos/validacao/zona/{value}"
+                                hx-trigger="change"
+                                hx-target="#zona-validation">
+                            <option value="">Selecione a zona</option>
+                            <option value="ZAD1">ZAD1 - Zona de Adensamento</option>
+                            <option value="ZAD2">ZAD2 - Zona de Adensamento</option>
+                            <option value="ZC1">ZC1 - Zona Central</option>
+                            <option value="ZC2">ZC2 - Zona Central</option>
+                            <option value="ZCT1">ZCT1 - Zona de Transição</option>
+                            <option value="ZCT2">ZCT2 - Zona de Transição</option>
+                            <option value="ZCT3">ZCT3 - Zona de Transição</option>
+                            <option value="ZCT4">ZCT4 - Zona de Transição</option>
+                            <option value="ZEIS">ZEIS - Zona Especial</option>
+                            <option value="ZH1">ZH1 - Zona Habitacional</option>
+                            <option value="ZH2">ZH2 - Zona Habitacional</option>
+                            <option value="ZH3">ZH3 - Zona Habitacional</option>
+                            <option value="ZHL">ZHL - Zona Habitacional</option>
+                            <option value="ZI1">ZI1 - Zona Industrial</option>
+                            <option value="ZI2">ZI2 - Zona Industrial</option>
+                            <option value="ZIA1">ZIA1 - Zona Industrial</option>
+                            <option value="ZIA2">ZIA2 - Zona Industrial</option>
+                            <option value="ZII">ZII - Zona Industrial</option>
+                        </select>
+                        <div id="zona-validation" class="mt-2"></div>
+                    </div>
+                    
                     <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label for="lados_poligono" class="block text-sm font-medium text-gray-700 mb-1">
@@ -189,20 +225,7 @@
                             </select>
                         </div>
 
-                        <div>
-                            <label for="tipologia" class="block text-sm font-medium text-gray-700 mb-1">
-                                Tipologia *
-                            </label>
-                            <select id="tipologia" 
-                                    name="tipologia" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required>
-                                <option value="">Selecione</option>
-                                <option value="Residencial">Residencial</option>
-                                <option value="Comercial">Comercial</option>
-                                <option value="Misto">Misto</option>
-                            </select>
-                        </div>
+                        <!-- Tipologia removida - agora está no projeto -->
                     </div>
 
                     <!-- Ângulos Internos Dinâmicos -->
@@ -258,35 +281,7 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label for="zona" class="block text-sm font-medium text-gray-700 mb-1">
-                            Zona *
-                        </label>
-                        <select id="zona" 
-                                name="zona" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required>
-                            <option value="">Selecione</option>
-                            <option value="ZAD1">ZAD1</option>
-                            <option value="ZAD2">ZAD2</option>
-                            <option value="ZC1">ZC1</option>
-                            <option value="ZC2">ZC2</option>
-                            <option value="ZCT1">ZCT1</option>
-                            <option value="ZCT2">ZCT2</option>
-                            <option value="ZCT3">ZCT3</option>
-                            <option value="ZCT4">ZCT4</option>
-                            <option value="ZEIS">ZEIS</option>
-                            <option value="ZH1">ZH1</option>
-                            <option value="ZH2">ZH2</option>
-                            <option value="ZH3">ZH3</option>
-                            <option value="ZHL">ZHL</option>
-                            <option value="ZI1">ZI1</option>
-                            <option value="ZI2">ZI2</option>
-                            <option value="ZIA1">ZIA1</option>
-                            <option value="ZIA2">ZIA2</option>
-                            <option value="ZII">ZII</option>
-                        </select>
-                    </div>
+                    <!-- Zona movida para o início do formulário -->
 
                     <div>
                         <label for="observacoes" class="block text-sm font-medium text-gray-700 mb-1">

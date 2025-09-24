@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro de Projetos - Sistema AECO{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">Cadastro de Projetos</h2>
+                <p class="text-gray-600 mt-1">Formulário de briefing para novos projetos AECO</p>
+            </div>
+            <a href="/" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
+                Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <form id="projeto-form" 
+              hx-post="/cadastro-projetos" 
+              hx-target="body"
+              hx-swap="none"
+              hx-indicator="#loading-indicator"
+              hx-on::before-request="showLoading()"
+              hx-on::after-request="handleFormResponse(event)"
+              hx-on::response-error="handleFormError(event)">
+            
+            <!-- Dados do Cliente -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">📋 Dados do Cliente</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="nome_completo" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nome completo
+                        </label>
+                        <input type="text" 
+                               id="nome_completo" 
+                               name="nome_completo" 
+                               placeholder="Ex: João Silva Santos"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="contato" class="block text-sm font-medium text-gray-700 mb-1">
+                            Contato (telefone/e-mail)
+                        </label>
+                        <input type="text" 
+                               id="contato" 
+                               name="contato" 
+                               placeholder="Ex: (65) 99999-9999 ou joao@email.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="estado_civil_composicao" class="block text-sm font-medium text-gray-700 mb-1">
+                            Estado civil / composição familiar
+                        </label>
+                        <input type="text" 
+                               id="estado_civil_composicao" 
+                               name="estado_civil_composicao" 
+                               placeholder="Ex: Casado, 2 filhos pequenos"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="profissao_rotina" class="block text-sm font-medium text-gray-700 mb-1">
+                            Profissão / rotina
+                        </label>
+                        <input type="text" 
+                               id="profissao_rotina" 
+                               name="profissao_rotina" 
+                               placeholder="Ex: Engenheiro, trabalha home office"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Programa de Necessidades -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">🏠 Programa de Necessidades</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="tipologia" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tipologia
+                        </label>
+                        <select id="tipologia" 
+                                name="tipologia" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Selecione</option>
+                            <option value="residencial">Residencial</option>
+                            <option value="comercial">Comercial</option>
+                            <option value="institucional">Institucional</option>
+                            <option value="mista">Mista</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="ambientes_desejados" class="block text-sm font-medium text-gray-700 mb-1">
+                            Ambientes desejados
+                        </label>
+                        <input type="text" 
+                               id="ambientes_desejados" 
+                               name="ambientes_desejados" 
+                               placeholder="Ex: 3 quartos, 2 banheiros, sala, cozinha, área de serviço"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <label for="prioridades" class="block text-sm font-medium text-gray-700 mb-1">
+                            Prioridades
+                        </label>
+                        <input type="text" 
+                               id="prioridades" 
+                               name="prioridades" 
+                               placeholder="Ex: cozinha integrada, área gourmet, garagem ampla, home office"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estilo e Referências -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">🎨 Estilo e Referências</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="estilo_arquitetonico" class="block text-sm font-medium text-gray-700 mb-1">
+                            Estilo arquitetônico preferido
+                        </label>
+                        <select id="estilo_arquitetonico" 
+                                name="estilo_arquitetonico" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Selecione</option>
+                            <option value="moderno">Moderno</option>
+                            <option value="clássico">Clássico</option>
+                            <option value="rústico">Rústico</option>
+                            <option value="minimalista">Minimalista</option>
+                            <option value="contemporâneo">Contemporâneo</option>
+                            <option value="tradicional">Tradicional</option>
+                            <option value="ecletismo">Ecletismo</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="materiais_interesse" class="block text-sm font-medium text-gray-700 mb-1">
+                            Materiais de interesse
+                        </label>
+                        <input type="text" 
+                               id="materiais_interesse" 
+                               name="materiais_interesse" 
+                               placeholder="Ex: madeira, vidro, concreto, tijolo aparente"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <label for="exemplos_referencias" class="block text-sm font-medium text-gray-700 mb-1">
+                            Exemplos de projetos/referências que agradam
+                        </label>
+                        <textarea id="exemplos_referencias" 
+                                  name="exemplos_referencias" 
+                                  rows="3"
+                                  placeholder="Descreva projetos, imagens ou referências que você gosta..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rotina e Funcionalidade -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">🏃‍♂️ Rotina e Funcionalidade</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="lg:col-span-2">
+                        <label for="uso_espacos_dia_dia" class="block text-sm font-medium text-gray-700 mb-1">
+                            Como a família utiliza os espaços no dia a dia?
+                        </label>
+                        <textarea id="uso_espacos_dia_dia" 
+                                  name="uso_espacos_dia_dia" 
+                                  rows="3"
+                                  placeholder="Descreva a rotina da família e como os espaços são utilizados..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="animais_estimacao" class="block text-sm font-medium text-gray-700 mb-1">
+                            Há animais de estimação?
+                        </label>
+                        <input type="text" 
+                               id="animais_estimacao" 
+                               name="animais_estimacao" 
+                               placeholder="Ex: 2 cachorros de médio porte, 1 gato"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="necessidades_especiais" class="block text-sm font-medium text-gray-700 mb-1">
+                            Necessidades especiais
+                        </label>
+                        <input type="text" 
+                               id="necessidades_especiais" 
+                               name="necessidades_especiais" 
+                               placeholder="Ex: acessibilidade, home office, ateliê"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <label for="frequencia_visitas" class="block text-sm font-medium text-gray-700 mb-1">
+                            Frequência de visitas/recepção de convidados
+                        </label>
+                        <input type="text" 
+                               id="frequencia_visitas" 
+                               name="frequencia_visitas" 
+                               placeholder="Ex: Recebemos família todo final de semana, festas anuais"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aspectos Financeiros e Prazos -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">💰 Aspectos Financeiros e Prazos</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label for="orcamento_estimado" class="block text-sm font-medium text-gray-700 mb-1">
+                            Orçamento estimado para a obra
+                        </label>
+                        <input type="text" 
+                               id="orcamento_estimado" 
+                               name="orcamento_estimado" 
+                               placeholder="Ex: R$ 500.000,00"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="fonte_recursos" class="block text-sm font-medium text-gray-700 mb-1">
+                            Fonte de recursos
+                        </label>
+                        <select id="fonte_recursos" 
+                                name="fonte_recursos" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Selecione</option>
+                            <option value="recursos_próprios">Recursos próprios</option>
+                            <option value="financiamento">Financiamento</option>
+                            <option value="misto">Misto (próprios + financiamento)</option>
+                            <option value="investidor">Investidor</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="prazo_entrega" class="block text-sm font-medium text-gray-700 mb-1">
+                            Prazo de entrega esperado
+                        </label>
+                        <input type="text" 
+                               id="prazo_entrega" 
+                               name="prazo_entrega" 
+                               placeholder="Ex: 12 meses, sem pressa"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sustentabilidade e Tecnologia -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">🌱 Sustentabilidade e Tecnologia</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="solucoes_sustentaveis" class="block text-sm font-medium text-gray-700 mb-1">
+                            Interesse em soluções sustentáveis
+                        </label>
+                        <input type="text" 
+                               id="solucoes_sustentaveis" 
+                               name="solucoes_sustentaveis" 
+                               placeholder="Ex: energia solar, captação de água da chuva, ventilação cruzada"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="nivel_automacao" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nível de automação desejado
+                        </label>
+                        <select id="nivel_automacao" 
+                                name="nivel_automacao" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Selecione</option>
+                            <option value="básico">Básico (iluminação, portão)</option>
+                            <option value="intermediário">Intermediário (+ segurança, climatização)</option>
+                            <option value="avançado">Avançado (casa inteligente completa)</option>
+                            <option value="não_interessado">Não tenho interesse</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações do Cliente -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 border-b pb-2 mb-4">📝 Observações do Cliente</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="desejos_expectativas" class="block text-sm font-medium text-gray-700 mb-1">
+                            Desejos e expectativas específicas
+                        </label>
+                        <textarea id="desejos_expectativas" 
+                                  name="desejos_expectativas" 
+                                  rows="4"
+                                  placeholder="Descreva seus sonhos e expectativas para o projeto..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="restricoes" class="block text-sm font-medium text-gray-700 mb-1">
+                            Restrições
+                        </label>
+                        <textarea id="restricoes" 
+                                  name="restricoes" 
+                                  rows="4"
+                                  placeholder="O que não pode ter de jeito nenhum..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex justify-end space-x-4 mt-6 pt-6 border-t">
+                <button type="button" 
+                        onclick="resetForm()"
+                        class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                    Limpar
+                </button>
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        id="submit-btn">
+                    <span id="btn-text">Cadastrar Projeto</span>
+                    <span id="loading-indicator" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Cadastrando...
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Resposta do Formulário -->
+        <div id="form-response" class="mt-4">
+            <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium" id="success-text">Projeto cadastrado com sucesso!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium" id="error-text">Erro ao cadastrar projeto!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% block scripts %}
+<script>
+function resetForm() {
+    document.getElementById('projeto-form').reset();
+    clearMessages();
+}
+
+function clearMessages() {
+    document.getElementById('success-message').classList.add('hidden');
+    document.getElementById('error-message').classList.add('hidden');
+}
+
+function showSuccess(message) {
+    clearMessages();
+    document.getElementById('success-text').textContent = message;
+    document.getElementById('success-message').classList.remove('hidden');
+}
+
+function showError(message) {
+    clearMessages();
+    document.getElementById('error-text').textContent = message;
+    document.getElementById('error-message').classList.remove('hidden');
+}
+
+function showLoading() {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Mostra estado de carregamento
+    btnText.classList.add('hidden');
+    loadingIndicator.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    // Limpa mensagens anteriores
+    clearMessages();
+}
+
+function handleFormResponse(event) {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Remove estado de carregamento
+    btnText.classList.remove('hidden');
+    loadingIndicator.classList.add('hidden');
+    submitBtn.disabled = false;
+    
+    console.log('Resposta recebida:', event.detail.xhr.responseText);
+    
+    try {
+        const response = JSON.parse(event.detail.xhr.responseText);
+        console.log('Response parsed:', response);
+        
+        if (response.success) {
+            showSuccess(response.message);
+            // Limpa o formulário após sucesso
+            setTimeout(() => {
+                document.getElementById('projeto-form').reset();
+                clearMessages();
+            }, 2000);
+        } else {
+            showError(response.message || 'Erro desconhecido');
+        }
+    } catch (error) {
+        console.error('Erro ao processar resposta:', error);
+        showError('Erro de comunicação com o servidor');
+    }
+}
+
+function handleFormError(event) {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Remove estado de carregamento
+    btnText.classList.remove('hidden');
+    loadingIndicator.classList.add('hidden');
+    submitBtn.disabled = false;
+    
+    console.error('Erro na requisição:', event.detail.xhr);
+    showError('Erro ao enviar formulário');
+}
+
+// Auto-load da lista ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializa o formulário
+    clearMessages();
+});
+</script>
+{% endblock %}
+{% endblock %}

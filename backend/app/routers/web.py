@@ -246,7 +246,7 @@ async def criar_terreno_web(request: Request):
         cep = form_data.get("cep")
         lados_poligono = int(form_data.get("lados_poligono"))
         tipo_lote = form_data.get("tipo_lote")
-        tipologia = form_data.get("tipologia")
+        # tipologia removida - agora está no projeto
         area = form_data.get("area")
         norte_verdadeiro = float(form_data.get("norte_verdadeiro"))
         zona = form_data.get("zona")
@@ -319,7 +319,7 @@ async def criar_terreno_web(request: Request):
             angulos_internos=angulos_internos,
             dimensoes_lados=dimensoes_lados,
             tipo_lote=tipo_lote,
-            tipologia=tipologia,
+            # tipologia removida - agora está no projeto
             area=area,
             norte_verdadeiro=norte_verdadeiro,
             zona=zona,
@@ -773,6 +773,86 @@ async def criar_projeto_web(request: Request):
                 "id": str(projeto_criado.id),
                 "nome_completo": projeto_criado.nome_completo,
                 "tipologia": projeto_criado.tipologia,
+                "created_at": projeto_criado.created_at.isoformat() if projeto_criado.created_at else None
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao criar projeto: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Erro interno: {str(e)}"
+            }
+        )
+
+
+@router.post("/cadastrar-projeto")
+async def cadastrar_projeto(
+    request: Request,
+    nome_projeto: str = Form(...),
+    tipo_empreendimento: str = Form(...),
+    natureza: str = Form(...),
+    descricao: Optional[str] = Form(None),
+    pavimentos: Optional[int] = Form(None),
+    altura_total: Optional[float] = Form(None),
+    area_construida: Optional[float] = Form(None),
+    area_minima_lote: Optional[float] = Form(None),
+    cliente_id: Optional[str] = Form(None),
+    terreno_id: Optional[str] = Form(None),
+    avenida: Optional[str] = Form(None),
+    observacoes: Optional[str] = Form(None)
+):
+    """
+    Processa o formulário de cadastro de projeto.
+    """
+    try:
+        # Gera código do projeto automaticamente
+        from ..utils.codigo_projeto import gerar_codigo_projeto_unico
+        cod_projeto = await gerar_codigo_projeto_unico()
+        
+        # Cria o projeto
+        projeto_data = ProjetoCreate(
+            cod_projeto=cod_projeto,
+            nome_projeto=nome_projeto,
+            tipo_empreendimento=tipo_empreendimento,
+            natureza=natureza,
+            descricao=descricao,
+            pavimentos=pavimentos,
+            altura_total=altura_total,
+            area_construida=area_construida,
+            area_minima_lote=area_minima_lote,
+            cliente_id=cliente_id if cliente_id else None,
+            terreno_id=terreno_id if terreno_id else None,
+            avenida=avenida,
+            observacoes=observacoes
+        )
+        
+        projeto_criado = await projetos_repo.create_projeto(projeto_data)
+        
+        # Se um terreno foi associado, recalcula os parâmetros urbanísticos
+        if terreno_id:
+            try:
+                terreno = await formulario_terrenos_repo.get_terreno_by_id(terreno_id)
+                if terreno:
+                    # Atualiza o terreno com o projeto_id
+                    await formulario_terrenos_repo.update_terreno(terreno_id, {"projeto_id": str(projeto_criado.id)})
+                    
+                    # Recalcula parâmetros urbanísticos
+                    await formulario_terrenos_repo._calcular_parametros_urbanisticos(terreno)
+                    logger.info(f"Parâmetros urbanísticos recalculados para terreno {terreno_id}")
+            except Exception as e:
+                logger.warning(f"Erro ao recalcular parâmetros para terreno {terreno_id}: {e}")
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": "Projeto cadastrado com sucesso!",
+            "data": {
+                "id": str(projeto_criado.id),
+                "cod_projeto": projeto_criado.cod_projeto,
+                "nome_projeto": projeto_criado.nome_projeto,
+                "tipo_empreendimento": projeto_criado.tipo_empreendimento,
                 "created_at": projeto_criado.created_at.isoformat() if projeto_criado.created_at else None
             }
         })

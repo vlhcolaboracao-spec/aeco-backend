@@ -1,0 +1,248 @@
+{
+  "Uuid": "614ba880-21be-4032-b68b-4666988cf187",
+  "IsCustomNode": false,
+  "Description": "",
+  "Name": "TESTE REQUEST",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "from urllib import request\r\nimport json\r\n\r\nurl = IN[0]\r\ntimeout = 10\r\n\r\n# abre a URL e lê os dados\r\nwith request.urlopen(url, timeout=timeout) as resp:\r\n    data = resp.read().decode(\"utf-8\")  # converte de bytes para string\r\n\r\ndados = json.loads(data)\r\n\r\nOUT = dados",
+      "Engine": "IronPython3",
+      "VariableInputPorts": true,
+      "Id": "cc65241dfb3141a5a2878eccb359d3f7",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "b9466ae967954100a554d22a2592200e",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "d1c7630ee655491485eeac39b1aaf14f",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "3ac3fa9c5ad2428e9731da062a73babd",
+          "Name": "OUT",
+          "Description": "Resultado do script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Executa um script Python incorporado."
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Watch, CoreNodeModels",
+      "WatchWidth": 200.0,
+      "WatchHeight": 200.0,
+      "Id": "5ad5fe9b727846899be6f916cfb71696",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "94275ef5a60c4744a231d373c767d501",
+          "Name": "",
+          "Description": "Nó do qual a saída é exibida",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "20bb0eafc7b946e88b579c22d1031bdd",
+          "Name": "",
+          "Description": "Saída do nó",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Visualiza a saída de um nó"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.StringInput, CoreNodeModels",
+      "SerializedWidth": 0.0,
+      "SerializedHeight": 0.0,
+      "Id": "dfe959382b1444ab85a1b16aa9bf2cd3",
+      "NodeType": "StringInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "4efed35030764de9938b74ab43090f26",
+          "Name": "",
+          "Description": "String",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Cria uma sequência de caracteres.",
+      "InputValue": "http://127.0.0.1:8000/inputs"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.StringInput, CoreNodeModels",
+      "SerializedWidth": 0.0,
+      "SerializedHeight": 0.0,
+      "Id": "7286ec62cf1e4ec39b20155d3943fa10",
+      "NodeType": "StringInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "525b0ac2bd784862852ae2ec9b026994",
+          "Name": "",
+          "Description": "String",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Cria uma sequência de caracteres.",
+      "InputValue": "http://127.0.0.1:8000/"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "3ac3fa9c5ad2428e9731da062a73babd",
+      "End": "94275ef5a60c4744a231d373c767d501",
+      "Id": "060c1977fb5d41518dcab03587a310ea",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "4efed35030764de9938b74ab43090f26",
+      "End": "b9466ae967954100a554d22a2592200e",
+      "Id": "35a5799b4d5f4f8ea50df7441f5fc8c9",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [
+    {
+      "Name": "DynamoIronPython3",
+      "Version": "1.5.1",
+      "ReferenceType": "Package",
+      "Nodes": [
+        "cc65241dfb3141a5a2878eccb359d3f7"
+      ]
+    }
+  ],
+  "EnableLegacyPolyCurveBehavior": true,
+  "Thumbnail": "",
+  "GraphDocumentationURL": null,
+  "ExtensionWorkspaceData": [
+    {
+      "ExtensionGuid": "28992e1d-abb9-417f-8b1b-05e053bee670",
+      "Name": "Propriedades",
+      "Version": "3.5",
+      "Data": {}
+    },
+    {
+      "ExtensionGuid": "DFBD9CC0-DB40-457A-939E-8C8555555A9D",
+      "Name": "Generative Design",
+      "Version": "9.1",
+      "Data": {}
+    }
+  ],
+  "Author": "",
+  "Linting": {
+    "activeLinter": "Nenhum",
+    "activeLinterId": "7b75fb44-43fd-4631-a878-29f4d5d8399a",
+    "warningCount": 0,
+    "errorCount": 0
+  },
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 100.0,
+      "HasRunWithoutCrash": true,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "3.5.2.8914",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "_Visualização do plano de fundo",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Id": "cc65241dfb3141a5a2878eccb359d3f7",
+        "Name": "Python Script",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 538.7016151808227,
+        "Y": 67.74719458927754
+      },
+      {
+        "Id": "5ad5fe9b727846899be6f916cfb71696",
+        "Name": "Watch",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 753.9030298387813,
+        "Y": -66.91245071061638
+      },
+      {
+        "Id": "dfe959382b1444ab85a1b16aa9bf2cd3",
+        "Name": "String",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 261.813000177821,
+        "Y": 69.4018297128662
+      },
+      {
+        "Id": "7286ec62cf1e4ec39b20155d3943fa10",
+        "Name": "String",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 262.07278421614586,
+        "Y": 218.10720653480047
+      }
+    ],
+    "Annotations": [],
+    "X": -184.6517522686396,
+    "Y": 134.66468896627126,
+    "Zoom": 1.0566769109278005
+  }
+}

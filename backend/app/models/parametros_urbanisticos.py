@@ -107,7 +107,7 @@ class ParametrosUrbanisticosListResponse(BaseModel):
 class DadosCalculoParametros(BaseModel):
     """Modelo para dados necessários para cálculo dos parâmetros"""
     zona: str = Field(..., description="Zona do terreno")
-    tipologia: str = Field(..., description="Tipologia (Residencial/Comercial/Misto)")
+    tipo_empreendimento: str = Field(..., description="Tipo de empreendimento (Residencial/Comercial/Misto)")
     municipio: str = Field(default="SORRISO", description="Município")
     
     # Dados opcionais para cálculos dinâmicos

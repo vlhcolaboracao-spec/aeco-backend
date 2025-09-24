@@ -22,7 +22,7 @@ class ParametrosUrbanisticosService:
         
         try:
             # Recuo Frontal
-            parametros["recuo_frontal"] = self._calcular_recuo_frontal(dados.zona, dados.tipologia)
+            parametros["recuo_frontal"] = self._calcular_recuo_frontal(dados.zona, dados.tipo_empreendimento)
             
             # Recuo Lateral
             parametros["recuo_lateral"] = self._calcular_recuo_lateral(
@@ -309,6 +309,17 @@ class ParametrosUrbanisticosService:
                 ("ZCT4", "desmembramento"): 10.0,
                 ("ZCT4", "loteamento e condominio"): 15.0,
             }
+            
+            # Se natureza é "Não se aplica", retorna valor None (não aplicável)
+            if natureza == "não se aplica":
+                return ParametroCalculado(
+                    nome="testada_minima",
+                    valor=None,
+                    unidade="metros",
+                    regra_aplicada=f"Zona {zona} - Não se aplica",
+                    dependencias=["zona", "natureza"],
+                    erro=None  # Não é erro, apenas não se aplica
+                )
             
             if not natureza:
                 return ParametroCalculado(

@@ -20,7 +20,7 @@ class FormularioTerrenosRepository:
     """Repository para gerenciar terrenos no MongoDB"""
     
     def __init__(self):
-        self.collection_name = "formulario_terrenos_projetos"
+        self.collection_name = "terrenos"
     
     async def get_collection(self):
         """Retorna a coleção de terrenos"""
@@ -69,11 +69,21 @@ class FormularioTerrenosRepository:
             from ..repositories.parametros_urbanisticos_repo import parametros_urbanisticos_repo
             from ..services.parametros_urbanisticos_service import parametros_service
             
+            # Busca dados do projeto se associado
+            from ..repositories.projetos_repo import projetos_repo
+            projeto = None
+            if terreno.projeto_id:
+                projeto = await projetos_repo.get_projeto_by_id(terreno.projeto_id)
+            
             # Prepara dados para cálculo
             dados_calculo = DadosCalculoParametros(
                 zona=terreno.zona,
-                tipologia=terreno.tipologia,
-                municipio=terreno.municipio
+                tipo_empreendimento=projeto.tipo_empreendimento if projeto else "Residencial",  # Default
+                municipio=terreno.municipio,
+                pavimentos=projeto.pavimentos if projeto else None,
+                altura_total=projeto.altura_total if projeto else None,
+                avenida=projeto.avenida if projeto else None,
+                natureza=projeto.natureza if projeto else None
             )
             
             # Calcula todos os parâmetros

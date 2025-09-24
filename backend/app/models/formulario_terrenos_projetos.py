@@ -29,6 +29,7 @@ class FormularioTerrenosProjetosBase(BaseModel):
     
     # Identificação do Projeto
     cod_projeto: Optional[str] = Field(None, min_length=7, max_length=7, description="Código único do projeto (7 caracteres) - gerado automaticamente")
+    projeto_id: Optional[str] = Field(None, description="ID do projeto associado (opcional)")
     
     # Identificação do Imóvel
     matricula: str = Field(..., min_length=1, max_length=50, description="Matrícula do imóvel")
@@ -48,7 +49,6 @@ class FormularioTerrenosProjetosBase(BaseModel):
     angulos_internos: List[float] = Field(..., description="Lista de ângulos internos do polígono")
     dimensoes_lados: List[Dict[str, Union[str, float]]] = Field(..., description="Lista de dimensões dos lados do terreno")
     tipo_lote: str = Field(..., description="Tipo de lote: Padrão, Esquina, Único na Quadra")
-    tipologia: str = Field(..., description="Tipologia do terreno: Residencial, Comercial, Misto")
     area: str = Field(..., min_length=1, max_length=20, description="Área total do terreno")
     norte_verdadeiro: float = Field(..., ge=0, lt=360, description="Norte verdadeiro em graus (máximo 2 casas decimais)")
     zona: str = Field(..., description="Zona conforme legislação de Sorriso/MT")
@@ -158,13 +158,14 @@ class FormularioTerrenosProjetosBase(BaseModel):
             raise ValueError(f'Tipo de lote deve ser um dos seguintes: {", ".join(tipos_validos)}')
         return v
 
-    @field_validator('tipologia')
+    @field_validator('projeto_id')
     @classmethod
-    def validate_tipologia(cls, v):
-        """Valida tipologia do terreno"""
-        tipologias_validas = ['Residencial', 'Comercial', 'Misto']
-        if v not in tipologias_validas:
-            raise ValueError(f'Tipologia deve ser uma das seguintes: {", ".join(tipologias_validas)}')
+    def validate_projeto_id(cls, v):
+        """Valida ID do projeto"""
+        if v is None:
+            return None  # Permite None para terrenos sem projeto
+        if not ObjectId.is_valid(v):
+            raise ValueError('ID do projeto deve ser um ObjectId válido')
         return v
 
     @field_validator('norte_verdadeiro')
@@ -229,6 +230,7 @@ class FormularioTerrenosProjetosCreate(FormularioTerrenosProjetosBase):
 class FormularioTerrenosProjetosUpdate(BaseModel):
     """Modelo para atualização de terreno"""
     cod_projeto: Optional[str] = Field(None, min_length=7, max_length=7)
+    projeto_id: Optional[str] = None
     matricula: Optional[str] = Field(None, min_length=1, max_length=50)
     data: Optional[datetime] = None
     municipio: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -240,7 +242,6 @@ class FormularioTerrenosProjetosUpdate(BaseModel):
     cep: Optional[str] = Field(None, min_length=8, max_length=10)
     lados_poligono: Optional[int] = Field(None, ge=3, le=20)
     tipo_lote: Optional[str] = None
-    tipologia: Optional[str] = None
     area: Optional[float] = Field(None, gt=0)
     norte_verdadeiro: Optional[float] = Field(None, ge=0, lt=360)
     zona: Optional[str] = None
