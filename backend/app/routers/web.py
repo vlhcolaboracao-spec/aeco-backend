@@ -906,24 +906,44 @@ async def cadastrar_projeto(
             except Exception as e:
                 logger.warning(f"Erro ao recalcular parâmetros para terreno {terreno_id}: {e}")
         
-        return JSONResponse(content={
-            "success": True,
-            "message": "Projeto cadastrado com sucesso!",
-            "data": {
-                "id": str(projeto_criado.id),
-                "cod_projeto": projeto_criado.cod_projeto,
-                "nome_projeto": projeto_criado.nome_projeto,
-                "tipo_empreendimento": projeto_criado.tipo_empreendimento,
-                "created_at": projeto_criado.created_at.isoformat() if projeto_criado.created_at else None
-            }
-        })
+        # Retorna HTML formatado para exibição na tela
+        from fastapi.responses import HTMLResponse
+        
+        success_html = f"""
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <strong>Sucesso!</strong> Projeto cadastrado com sucesso!
+            </div>
+            <div class="mt-2 text-sm">
+                <p><strong>Código:</strong> {projeto_criado.cod_projeto}</p>
+                <p><strong>Nome:</strong> {projeto_criado.nome_projeto}</p>
+                <p><strong>Tipo:</strong> {projeto_criado.tipo_empreendimento}</p>
+                <p><strong>ID:</strong> {str(projeto_criado.id)[:8]}...</p>
+            </div>
+        </div>
+        """
+        
+        return HTMLResponse(content=success_html)
         
     except Exception as e:
         logger.error(f"Erro ao criar projeto: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "message": f"Erro interno: {str(e)}"
-            }
-        )
+        
+        # Retorna HTML formatado para erro
+        error_html = f"""
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <strong>Erro!</strong> Não foi possível cadastrar o projeto.
+            </div>
+            <div class="mt-2 text-sm">
+                <p>Por favor, tente novamente ou entre em contato com o suporte.</p>
+            </div>
+        </div>
+        """
+        
+        return HTMLResponse(content=error_html, status_code=500)
