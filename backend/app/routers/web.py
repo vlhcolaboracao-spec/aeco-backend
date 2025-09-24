@@ -808,11 +808,25 @@ async def cadastrar_projeto(
     Processa o formulário de cadastro de projeto.
     """
     try:
+        logger.info("=== INÍCIO DO CADASTRO DE PROJETO ===")
+        logger.info(f"Dados recebidos:")
+        logger.info(f"  nome_projeto: {nome_projeto}")
+        logger.info(f"  tipo_empreendimento: {tipo_empreendimento}")
+        logger.info(f"  natureza: {natureza}")
+        logger.info(f"  cliente_id: {cliente_id}")
+        logger.info(f"  terreno_id: {terreno_id}")
+        logger.info(f"  pavimentos: {pavimentos}")
+        logger.info(f"  altura_total: {altura_total}")
+        logger.info(f"  area_construida: {area_construida}")
+        logger.info(f"  avenida: {avenida}")
         # Gera código do projeto automaticamente
+        logger.info("Gerando código do projeto...")
         from ..utils.codigo_projeto import gerar_codigo_projeto_unico
         cod_projeto = await gerar_codigo_projeto_unico()
+        logger.info(f"Código gerado: {cod_projeto}")
         
         # Cria o projeto
+        logger.info("Criando objeto ProjetoCreate...")
         projeto_data = ProjetoCreate(
             cod_projeto=cod_projeto,
             nome_projeto=nome_projeto,
@@ -828,6 +842,7 @@ async def cadastrar_projeto(
             avenida=avenida,
             observacoes=observacoes
         )
+        logger.info("Objeto ProjetoCreate criado com sucesso!")
         
         projeto_criado = await projetos_repo.create_projeto(projeto_data)
         
