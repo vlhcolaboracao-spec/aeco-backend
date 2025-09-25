@@ -243,7 +243,7 @@
                 <div class="flex space-x-4">
                     <button type="button" 
                             class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                            onclick="resetForm()">
+                            onclick="resetForm(true)">
                         Limpar
                     </button>
                     <button type="submit" 
@@ -617,8 +617,19 @@ function obterLimitePavimentosPorZona(zona) {
     return limitesPavimentos[zona] || null;
 }
 
+// Variáveis para controle de interação do usuário
+let autoClearTimeout = null;
+let userInteracting = false;
+let formHasData = false;
+
 // Funções para feedback visual - Padrão padronizado
-function resetForm() {
+function resetForm(manual = false) {
+    // Cancela limpeza automática pendente
+    if (autoClearTimeout) {
+        clearTimeout(autoClearTimeout);
+        autoClearTimeout = null;
+    }
+    
     document.getElementById('projetoForm').reset();
     clearMessages();
     
@@ -627,6 +638,16 @@ function resetForm() {
     document.getElementById('terreno_id').value = '';
     document.getElementById('cliente_nome').value = '';
     document.getElementById('terreno_info').value = '';
+    
+    // Reset flags
+    userInteracting = false;
+    formHasData = false;
+    
+    if (manual) {
+        console.log('Formulário limpo manualmente pelo usuário');
+    } else {
+        console.log('Formulário limpo automaticamente após cadastro bem-sucedido');
+    }
 }
 
 function clearMessages() {
@@ -635,15 +656,95 @@ function clearMessages() {
 }
 
 function showSuccess(message) {
+    console.log('=== SHOW SUCCESS CHAMADO ===');
+    console.log('Mensagem:', message);
+    
     clearMessages();
     document.getElementById('success-text').textContent = message;
     document.getElementById('success-message').classList.remove('hidden');
+    
+    // RESET CRÍTICO: Reset userInteracting para permitir limpeza automática
+    userInteracting = false;
+    console.log('Cadastro bem-sucedido - resetando userInteracting para false');
+    console.log('Agendando limpeza automática');
+    
+    // Agenda limpeza automática
+    scheduleAutoClear();
 }
 
 function showError(message) {
     clearMessages();
     document.getElementById('error-text').textContent = message;
     document.getElementById('error-message').classList.remove('hidden');
+}
+
+function scheduleAutoClear() {
+    // Cancela timeout anterior se existir
+    if (autoClearTimeout) {
+        clearTimeout(autoClearTimeout);
+    }
+    
+    console.log('Agendando limpeza automática em 8 segundos...');
+    console.log(`Status atual - userInteracting: ${userInteracting}, formHasData: ${formHasData}`);
+    
+    autoClearTimeout = setTimeout(() => {
+        console.log('=== TIMEOUT DE 8 SEGUNDOS ATINGIDO ===');
+        console.log(`Status final - userInteracting: ${userInteracting}, formHasData: ${formHasData}`);
+        
+        // Verifica se o usuário interagiu desde o cadastro
+        if (userInteracting) {
+            console.log('❌ Limpeza automática CANCELADA - usuário interagiu com o formulário');
+            console.log('Formulário NÃO será limpo automaticamente');
+        } else {
+            console.log('✅ Executando limpeza automática - usuário NÃO interagiu');
+            console.log('Formulário será limpo automaticamente');
+            resetForm(false); // false = limpeza automática
+        }
+        autoClearTimeout = null;
+    }, 8000);
+}
+
+function cancelAutoClear() {
+    if (autoClearTimeout) {
+        clearTimeout(autoClearTimeout);
+        autoClearTimeout = null;
+        console.log('Limpeza automática cancelada - usuário interagiu ou formulário tem dados');
+    }
+}
+
+function detectUserInteraction() {
+    userInteracting = true;
+    console.log('Usuário interagindo com formulário - cancelando limpeza automática');
+    
+    // Cancela limpeza automática quando usuário interage
+    cancelAutoClear();
+}
+
+function detectFormData() {
+    const form = document.getElementById('projetoForm');
+    const formData = new FormData(form);
+    
+    // Verifica se há dados significativos no formulário
+    let hasData = false;
+    for (let [key, value] of formData.entries()) {
+        if (value && value.trim() !== '') {
+            hasData = true;
+            break;
+        }
+    }
+    
+    // Verifica campos específicos do projeto
+    if (!hasData) {
+        const clienteId = document.getElementById('cliente_id').value;
+        const terrenoId = document.getElementById('terreno_id').value;
+        const clienteNome = document.getElementById('cliente_nome').value;
+        const terrenoInfo = document.getElementById('terreno_info').value;
+        
+        hasData = clienteId || terrenoId || clienteNome || terrenoInfo;
+    }
+    
+    formHasData = hasData;
+    console.log(`Detecção de dados - formHasData: ${formHasData}`);
 }
 
 function showLoading() {
@@ -678,11 +779,7 @@ function handleFormResponse(event) {
         
         if (response.success) {
             showSuccess(response.message);
-            // Limpa o formulário após sucesso com timeout de 8 segundos
-            setTimeout(() => {
-                resetForm();
-                clearMessages();
-            }, 8000);
+            // A limpeza automática é gerenciada pela função showSuccess
         } else {
             showError(response.message || 'Erro desconhecido');
         }
@@ -799,8 +896,35 @@ document.getElementById('projetoForm').addEventListener('submit', function(e) {
 
 // Auto-load ao carregar a página
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicialização específica se necessário
     console.log('Formulário de projetos inicializado com padrão padronizado');
+    
+    // Adiciona listeners para detectar interação do usuário
+    const form = document.getElementById('projetoForm');
+    if (form) {
+        // Detecta quando usuário digita em qualquer campo
+        form.addEventListener('input', function(e) {
+            detectUserInteraction();
+        });
+        
+        // Detecta quando usuário clica em qualquer campo
+        form.addEventListener('focus', function(e) {
+            detectUserInteraction();
+        });
+        
+        // Detecta quando usuário seleciona em selects
+        form.addEventListener('change', function(e) {
+            detectUserInteraction();
+        });
+        
+        // Detecta quando usuário clica no botão Limpar
+        const limparBtn = form.querySelector('button[type="button"]');
+        if (limparBtn) {
+            limparBtn.addEventListener('click', function() {
+                console.log('Botão Limpar clicado - cancelando limpeza automática');
+                cancelAutoClear();
+            });
+        }
+    }
 });
 </script>
 {% endblock %}
