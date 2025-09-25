@@ -12,7 +12,15 @@
         </div>
 
         <!-- Formulário -->
-        <form id="projetoForm" class="bg-white rounded-lg shadow-md p-6" hx-post="/cadastrar-projeto" hx-target="#resultado" hx-indicator="#loading">
+        <form id="projetoForm" 
+              class="bg-white rounded-lg shadow-md p-6" 
+              hx-post="/cadastrar-projeto" 
+              hx-target="body"
+              hx-swap="none"
+              hx-indicator="#loading-indicator"
+              hx-on::before-request="showLoading()"
+              hx-on::after-request="handleFormResponse(event)"
+              hx-on::response-error="handleFormError(event)">
             <!-- Passo 1: Identificação do Projeto -->
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">1. Identificação do Projeto</h2>
@@ -235,28 +243,53 @@
                 <div class="flex space-x-4">
                     <button type="button" 
                             class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                            onclick="document.getElementById('projetoForm').reset()">
+                            onclick="resetForm()">
                         Limpar
                     </button>
                     <button type="submit" 
-                            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center">
-                        <span id="loading" class="htmx-indicator">
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
+                            id="submit-btn">
+                        <span id="btn-text">Cadastrar Projeto</span>
+                        <span id="loading-indicator" class="hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
+                            Cadastrando...
                         </span>
-                        Cadastrar Projeto
                     </button>
                 </div>
             </div>
         </form>
 
-        <!-- Área de resultado -->
-        <div id="resultado" class="mt-6"></div>
-        
-        <!-- Mensagens de feedback -->
-        <div id="feedback-messages" class="mt-4"></div>
+        <!-- Resposta do Formulário -->
+        <div id="form-response" class="mt-4">
+            <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium" id="success-text">Projeto cadastrado com sucesso!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium" id="error-text">Erro ao cadastrar projeto!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -584,54 +617,93 @@ function obterLimitePavimentosPorZona(zona) {
     return limitesPavimentos[zona] || null;
 }
 
-// Funções para feedback visual
-function showSuccessMessage(message) {
-    const feedbackDiv = document.getElementById('feedback-messages');
-    feedbackDiv.innerHTML = `
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                ${message}
-            </div>
-        </div>
-    `;
+// Funções para feedback visual - Padrão padronizado
+function resetForm() {
+    document.getElementById('projetoForm').reset();
+    clearMessages();
     
-    // Remove mensagem após 5 segundos
-    setTimeout(() => {
-        feedbackDiv.innerHTML = '';
-    }, 5000);
-    
-    // Scroll para a mensagem
-    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Limpa campos específicos do projeto
+    document.getElementById('cliente_id').value = '';
+    document.getElementById('terreno_id').value = '';
+    document.getElementById('cliente_nome').value = '';
+    document.getElementById('terreno_info').value = '';
 }
 
-function showErrorMessage(message) {
-    const feedbackDiv = document.getElementById('feedback-messages');
-    feedbackDiv.innerHTML = `
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                </svg>
-                ${message}
-            </div>
-        </div>
-    `;
-    
-    // Remove mensagem após 7 segundos (erro fica mais tempo)
-    setTimeout(() => {
-        feedbackDiv.innerHTML = '';
-    }, 7000);
-    
-    // Scroll para a mensagem
-    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+function clearMessages() {
+    document.getElementById('success-message').classList.add('hidden');
+    document.getElementById('error-message').classList.add('hidden');
 }
 
-function clearFeedbackMessages() {
-    const feedbackDiv = document.getElementById('feedback-messages');
-    feedbackDiv.innerHTML = '';
+function showSuccess(message) {
+    clearMessages();
+    document.getElementById('success-text').textContent = message;
+    document.getElementById('success-message').classList.remove('hidden');
+}
+
+function showError(message) {
+    clearMessages();
+    document.getElementById('error-text').textContent = message;
+    document.getElementById('error-message').classList.remove('hidden');
+}
+
+function showLoading() {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Mostra estado de carregamento
+    btnText.classList.add('hidden');
+    loadingIndicator.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    // Limpa mensagens anteriores
+    clearMessages();
+}
+
+function handleFormResponse(event) {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Remove estado de carregamento
+    btnText.classList.remove('hidden');
+    loadingIndicator.classList.add('hidden');
+    submitBtn.disabled = false;
+    
+    console.log('Resposta recebida:', event.detail.xhr.responseText);
+    
+    try {
+        const response = JSON.parse(event.detail.xhr.responseText);
+        console.log('Response parsed:', response);
+        
+        if (response.success) {
+            showSuccess(response.message);
+            // Limpa o formulário após sucesso com timeout de 8 segundos
+            setTimeout(() => {
+                resetForm();
+                clearMessages();
+            }, 8000);
+        } else {
+            showError(response.message || 'Erro desconhecido');
+        }
+    } catch (error) {
+        console.error('Erro ao processar resposta:', error);
+        showError('Erro de comunicação com o servidor');
+    }
+}
+
+function handleFormError(event) {
+    const btnText = document.getElementById('btn-text');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Remove estado de carregamento
+    btnText.classList.remove('hidden');
+    loadingIndicator.classList.add('hidden');
+    submitBtn.disabled = false;
+    
+    console.error('Erro na requisição:', event.detail.xhr);
+    showError('Erro ao enviar formulário');
 }
 
 // Form validation
@@ -721,59 +793,14 @@ document.getElementById('projetoForm').addEventListener('submit', function(e) {
     
     if (!isValid) {
         e.preventDefault();
-        showErrorMessage('Por favor, preencha todos os campos obrigatórios.');
+        showError('Por favor, preencha todos os campos obrigatórios.');
     }
 });
 
-// Event listeners para feedback HTMX
-document.addEventListener('htmx:beforeRequest', function(event) {
-    // Limpa mensagens anteriores antes de nova requisição
-    clearFeedbackMessages();
-});
-
-document.addEventListener('htmx:afterRequest', function(event) {
-    // Processa resposta após requisição HTMX
-    if (event.detail.xhr) {
-        const status = event.detail.xhr.status;
-        const responseText = event.detail.xhr.responseText;
-        
-        try {
-            const response = JSON.parse(responseText);
-            
-            if (status === 200 || status === 201) {
-                if (response.success) {
-                    showSuccessMessage(response.message || 'Projeto cadastrado com sucesso!');
-                    
-                    // Limpa formulário após sucesso
-                    setTimeout(() => {
-                        document.getElementById('projetoForm').reset();
-                        clearFeedbackMessages();
-                    }, 2000);
-                } else {
-                    showErrorMessage(response.message || 'Erro ao cadastrar projeto.');
-                }
-            } else {
-                showErrorMessage('Erro no servidor. Tente novamente.');
-            }
-        } catch (error) {
-            // Se não conseguir parsear JSON, verifica status HTTP
-            if (status === 200 || status === 201) {
-                showSuccessMessage('Projeto cadastrado com sucesso!');
-            } else {
-                showErrorMessage('Erro ao processar resposta do servidor.');
-            }
-        }
-    }
-});
-
-document.addEventListener('htmx:responseError', function(event) {
-    // Trata erros de rede/conexão
-    showErrorMessage('Erro de conexão. Verifique sua internet e tente novamente.');
-});
-
-document.addEventListener('htmx:sendError', function(event) {
-    // Trata erros de envio
-    showErrorMessage('Erro ao enviar dados. Tente novamente.');
+// Auto-load ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicialização específica se necessário
+    console.log('Formulário de projetos inicializado com padrão padronizado');
 });
 </script>
 {% endblock %}
